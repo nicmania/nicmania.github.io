@@ -1,0 +1,3126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zetha Programming Language</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* CSS Custom Properties for Theming */
+        :root {
+            /* Dark Theme Defaults */
+            --bg-primary: #000000; /* App background, editor background */
+            --bg-secondary: #1a1a1a; /* Top bars, bottom bar, line numbers */
+            --bg-tertiary: #282828; /* Drawer header, modal background, menu background */
+            --text-primary: #f0f0f0; /* Most text, active tab, header titles */
+            --text-secondary: #ccc; /* Icons, inactive tab, drawer item icons, dash separator */
+            --text-dimmed: #888; /* Line numbers, drawer section titles, inactive tab */
+            --text-placeholder: #666; /* Textarea placeholder */
+            --border-color: #333; /* Separators, editor border */
+            --accent-color: #4f46e5; /* Active tab underline, save button */
+            --fab-bg: #facc15; /* FAB background */
+            --fab-text: #000000; /* FAB icon color */
+            --pip-item-bg: #333333; /* Pip module item background */
+            --pip-item-hover-bg: #444444; /* Pip module item hover background */
+            --pip-item-description-text: #a0a0a0; /* Pip module description */
+            --settings-bg: #e0e0e0; /* Settings background */
+            --settings-text: #333333; /* Settings text */
+            --settings-border: #cccccc; /* Settings item border */
+            --settings-version-text: #888888; /* Settings version text */
+            --settings-toggle-on: #4CAF50; /* Settings toggle ON color */
+            --settings-toggle-off: #888888; /* Settings toggle OFF color */
+            --modal-bg: #282828; /* Save modal background */
+            --modal-input-bg: #1a1a1a; /* Save modal input background */
+            --modal-input-text: #f0f0f0; /* Save modal input text */
+            --modal-input-placeholder: #666; /* Save modal input placeholder */
+            --modal-button-save-bg: #4f46e5; /* Save modal save button background */
+            --modal-button-save-hover-bg: #4338ca; /* Save modal save button hover background */
+            --modal-button-cancel-bg: #555; /* Save modal cancel button background */
+            --modal-button-cancel-hover-bg: #666; /* Save modal cancel button hover background */
+
+            /* Share Modal Specific */
+            --share-modal-bg: #282828;
+            --share-modal-text: #f0f0f0;
+            --share-button-bg: #4f46e5;
+            --share-button-hover-bg: #4338ca;
+            --share-button-cancel-bg: #555;
+            --share-button-cancel-hover-bg: #666;
+
+            /* Image Suggestion Box */
+            --suggestion-bg: #282828;
+            --suggestion-border: #333;
+            --suggestion-item-bg: #282828;
+            --suggestion-item-hover-bg: #3a3a3a;
+            --suggestion-text: #f0f0f0;
+        }
+
+        /* Light Theme Overrides */
+        body.light-theme {
+            --bg-primary: #ffffff; /* App background, editor background */
+            --bg-secondary: #f0f0f0; /* Top bars, bottom bar, line numbers */
+            --bg-tertiary: #e8e8e8; /* Drawer header, modal background, menu background */
+            --text-primary: #333333; /* Most text, active tab, header titles */
+            --text-secondary: #555555; /* Icons, inactive tab, drawer item icons, dash separator */
+            --text-dimmed: #999; /* Line numbers, drawer section titles, inactive tab */
+            --text-placeholder: #a0a0a0; /* Textarea placeholder */
+            --border-color: #dddddd; /* Separators, editor border */
+            --accent-color: #3b82f6; /* Active tab underline, save button (blue) */
+            --fab-bg: #facc15; /* FAB background (can remain yellow) */
+            --fab-text: #000000; /* FAB icon color */
+            --pip-item-bg: #e8e8e8; /* Pip module item background */
+            --pip-item-hover-bg: #dcdcdc; /* Pip module item hover background */
+            --pip-item-description-text: #777777; /* Pip module description */
+            --settings-bg: #ffffff; /* Settings background (white) */
+            --settings-text: #333333; /* Settings text */
+            --settings-border: #e0e0e0; /* Settings item border */
+            --settings-version-text: #999999; /* Settings version text */
+            --settings-toggle-on: #28a745; /* Settings toggle ON color (darker green) */
+            --settings-toggle-off: #aaaaaa; /* Settings toggle OFF color (darker gray) */
+            --modal-bg: #ffffff; /* Save modal background */
+            --modal-input-bg: #f5f5f5; /* Save modal input background */
+            --modal-input-text: #333333; /* Save modal input text */
+            --modal-input-placeholder: #999999; /* Save modal input placeholder */
+            --modal-button-save-bg: #3b82f6; /* Save modal save button background (blue) */
+            --modal-button-save-hover-bg: #2563eb; /* Save modal save button hover background */
+            --modal-button-cancel-bg: #cccccc; /* Save modal cancel button background */
+            --modal-button-cancel-hover-bg: #bbbbbb; /* Save modal cancel button hover background */
+
+            /* Share Modal Specific */
+            --share-modal-bg: #ffffff;
+            --share-modal-text: #333333;
+            --share-button-bg: #3b82f6;
+            --share-button-hover-bg: #2563eb;
+            --share-button-cancel-bg: #cccccc;
+            --share-button-cancel-hover-bg: #bbbbbb;
+
+            /* Image Suggestion Box */
+            --suggestion-bg: #ffffff;
+            --suggestion-border: #dddddd;
+            --suggestion-item-bg: #ffffff;
+            --suggestion-item-hover-bg: #f0f0f0;
+            --suggestion-text: #333333;
+        }
+
+
+        /* General Body and Container Styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary); /* Use variable */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for app-like feel */
+            min-height: 100vh;
+            margin: 0;
+            padding: 0; /* Remove body padding */
+            box-sizing: border-box;
+            overflow: hidden; /* Prevent body scroll, app content will scroll */
+            transition: background-color 0.3s ease; /* Smooth transition for theme change */
+        }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 500px; /* Max width to resemble a phone screen */
+            height: 100vh; /* Full height of viewport */
+            background-color: var(--bg-primary); /* Use variable */
+            position: relative; /* For absolute positioning of output and FAB */
+            overflow: hidden; /* Hide scrollbars on the container itself */
+            border-radius: 15px; /* Rounded corners for the app frame */
+            box-shadow: 0 0 20px rgba(0,0,0,0.5); /* Subtle shadow for depth */
+            transition: background-color 0.3s ease; /* Smooth transition for theme change */
+        }
+
+        /* For very small screens, remove border-radius for full screen */
+        @media (max-width: 480px) {
+            .app-container {
+                border-radius: 0;
+                max-width: none;
+            }
+        }
+
+        /* Top Bar Styling (for editor mode) */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--bg-secondary); /* Use variable */
+            color: var(--text-primary); /* Use variable */
+            padding: 10px 15px;
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-color); /* Use variable */
+            flex-shrink: 0; /* Prevent shrinking */
+            position: relative; /* For positioning the file menu */
+            z-index: 20; /* Ensure top bar is above other content */
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .top-bar .left-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .top-bar .right-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .top-bar-icon {
+            font-size: 1.5rem; /* Slightly larger icons for better tap targets */
+            cursor: pointer;
+            color: var(--text-secondary); /* Use variable */
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+        .top-bar-icon:hover {
+            color: var(--text-primary); /* Use variable */
+            transform: scale(1.2); /* More noticeable enlarge on hover */
+        }
+        .top-bar-title {
+            font-weight: 600;
+            cursor: pointer; /* Make "new" title clickable */
+        }
+
+        /* Tabs Styling */
+        .tabs-bar {
+            display: flex;
+            background-color: var(--bg-secondary); /* Use variable */
+            border-bottom: 1px solid var(--border-color); /* Use variable */
+            overflow-x: auto; /* Allow horizontal scrolling for tabs */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            flex-shrink: 0; /* Prevent shrinking */
+            z-index: 15; /* Ensure tabs are above main content */
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .tab-item {
+            padding: 10px 15px;
+            color: var(--text-dimmed); /* Use variable */
+            font-size: 0.9rem;
+            white-space: nowrap; /* Prevent tab names from wrapping */
+            cursor: pointer;
+            border-right: 1px solid var(--border-color); /* Use variable */
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+        .tab-item.active {
+            color: var(--text-primary); /* Use variable */
+            border-bottom: 2px solid var(--accent-color); /* Use variable */
+            font-weight: 600;
+        }
+        .tab-item:last-child {
+            border-right: none; /* No border on the last tab */
+        }
+
+        /* Main Editor UI Container */
+        #editorUi {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* CRUCIAL: Make this container grow to fill all remaining vertical space */
+            overflow: hidden; /* Hide overflow if content inside exceeds its bounds */
+        }
+
+        /* Main Content Area (Editor only) */
+        .main-content {
+            flex-grow: 1; /* Takes all available space within #editorUi */
+            display: flex;
+            flex-direction: column;
+            padding: 0 10px; /* Only horizontal padding, NO vertical padding */
+            overflow-y: hidden; /* Hide main-content scroll, editor will handle it */
+            position: relative; /* For positioning image suggestion box */
+        }
+
+        /* Code Editor Styling (within main-content) */
+        .code-editor-container {
+            display: flex;
+            flex-direction: row; /* Keep line numbers and textarea side-by-side */
+            width: 100%;
+            min-height: 200px; /* Minimum height for editor */
+            flex-grow: 1; /* Make editor container grow to fill available space in main-content */
+            border: 1px solid var(--border-color); /* Use variable */
+            border-radius: 5px; /* Slightly less rounded for a sharp app feel */
+            overflow: hidden;
+            background-color: var(--bg-primary); /* Use variable */
+            margin-top: 10px; /* Add margin to the top of the editor */
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .line-numbers {
+            flex-shrink: 0;
+            width: 35px; /* Width for line numbers */
+            padding: 15px 8px; /* Adjusted padding for better alignment */
+            background-color: var(--bg-secondary); /* Use variable */
+            color: var(--text-dimmed); /* Use variable */
+            font-family: monospace;
+            font-size: 1rem;
+            line-height: 1.5; /* Consistent line height */
+            text-align: right;
+            user-select: none;
+            white-space: pre;
+            overflow: hidden;
+            box-sizing: border-box;
+            vertical-align: top; /* Explicitly align to top */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        textarea {
+            flex-grow: 1; /* Make textarea grow to fill remaining space in its row */
+            padding: 15px 8px; /* Adjusted padding for better alignment with line numbers */
+            border: none;
+            border-radius: 0;
+            font-family: monospace;
+            font-size: 1rem;
+            line-height: 1.5; /* Consistent line height */
+            resize: vertical; /* Still allow vertical resizing for user comfort */
+            background-color: transparent; /* Transparent to show container's background */
+            color: var(--text-primary) !important; /* Use variable and force it */
+            caret-color: var(--text-primary) !important; /* Use variable and force it */
+            box-sizing: border-box;
+            white-space: pre; /* No word wrap */
+            text-align: left;
+            vertical-align: top; /* Explicitly align to top */
+            overflow-y: auto; /* Allow vertical scrolling */
+            overflow-x: auto; /* Allow horizontal scrolling */
+            outline: none;
+            transition: color 0.3s ease, caret-color 0.3s ease;
+        }
+        textarea::placeholder {
+            color: var(--text-placeholder); /* Use variable */
+            opacity: 1;
+        }
+
+        /* Image Suggestion Box Styling */
+        #imageSuggestionBox {
+            position: absolute;
+            bottom: 60px; /* Position above bottom bar and FAB */
+            left: 10px;
+            right: 10px;
+            background-color: var(--suggestion-bg);
+            border: 1px solid var(--suggestion-border);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            max-height: 150px; /* Limit height and make scrollable */
+            overflow-y: auto;
+            z-index: 50; /* Above editor, below modals/drawer */
+            display: none; /* Hidden by default */
+            flex-direction: column; /* Items stack vertically */
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .suggestion-item {
+            padding: 8px 12px;
+            color: var(--suggestion-text);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            white-space: nowrap; /* Prevent text wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Add ellipsis for long names */
+        }
+        .suggestion-item:hover {
+            background-color: var(--suggestion-item-hover-bg);
+        }
+
+        /* FAB Wrapper for clipping */
+        .fab-wrapper {
+            position: absolute;
+            bottom: 80px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden; /* This is the key for clipping anything outside the circle */
+            z-index: 100; /* Ensure it's on top of other content */
+        }
+
+        /* Floating Action Button (now inside the wrapper) */
+        .fab-button {
+            width: 100%; /* Fill the wrapper */
+            height: 100%; /* Fill the wrapper */
+            background-color: var(--fab-bg); /* Use variable */
+            border-radius: 50%; /* Still a circle */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 0 0 rgba(0,0,0,0) !important; /* Force zero shadow */
+            border: none !important; /* Force no border */
+            outline: none !important; /* Force no outline */
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .fab-button:hover {
+            background-color: #eab308; /* Specific hover for yellow, might need light/dark version */
+            transform: translateY(-2px);
+        }
+        .fab-button:active {
+            background-color: #d97706; /* Specific active for yellow, might need light/dark version */
+            transform: translateY(0);
+        }
+        .fab-button .play-icon {
+            font-size: 2rem;
+            color: var(--fab-text); /* Use variable */
+            line-height: 1; /* Center vertically */
+        }
+
+        /* Bottom Bar Styling */
+        .bottom-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: var(--bg-secondary); /* Use variable */
+            color: var(--text-primary); /* Use variable */
+            padding: 10px 0;
+            border-top: 1px solid var(--border-color); /* Use variable */
+            flex-shrink: 0; /* Prevent shrinking */
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+        .bottom-bar-item {
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: var(--text-secondary); /* Use variable */
+            padding: 5px 10px;
+            transition: color 0.3s ease;
+        }
+        .bottom-bar-item.separator {
+            color: var(--text-dimmed); /* Use variable */
+        }
+
+        /* Full-screen Output Console Styling */
+        .output-full-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-primary); /* Use variable */
+            color: var(--text-primary); /* Use variable */
+            display: flex; /* Use flex for column layout */
+            flex-direction: column;
+            z-index: 100; /* Ensure it's on top of everything */
+            overflow: hidden; /* Hide scrollbars on the container itself */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .output-full-screen-header {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-secondary); /* Use variable */
+            color: var(--text-primary); /* Use variable */
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color); /* Use variable */
+            flex-shrink: 0;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+        .output-full-screen-header .back-button {
+            background: none;
+            border: none;
+            color: var(--text-primary); /* Use variable */
+            font-size: 1.5rem; /* Larger arrow */
+            cursor: pointer;
+            padding: 0;
+            margin-right: 15px;
+            line-height: 1; /* Align icon vertically */
+            transition: color 0.3s ease;
+        }
+        .output-full-screen-header .header-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary); /* Use variable */
+            flex-grow: 1; /* Push other elements away */
+            text-align: center; /* Center the "Output" title */
+            margin-right: 40px; /* Offset for back button width */
+            transition: color 0.3s ease;
+        }
+        .output-content {
+            flex-grow: 1;
+            padding: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.95rem;
+            overflow-y: auto; /* Allow content to scroll */
+            transition: color 0.3s ease;
+        }
+
+        /* Zethapp Header Styling */
+        .zethapp-header {
+            align-items: center;
+            justify-content: space-between; /* Distribute items */
+            background-color: var(--bg-secondary); /* Use variable */
+            color: var(--text-primary); /* Use variable */
+            padding: 10px 15px;
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-color); /* Use variable */
+            flex-shrink: 0;
+            display: flex; /* Always flex, but visibility controlled by JS */
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+        .zethapp-left-elements {
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Space between back button and time (if time were present) */
+        }
+        .zethapp-right-elements {
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Space between dash and three dots */
+        }
+        .zethapp-header .back-button {
+            background: none;
+            border: none;
+            color: var(--text-primary); /* Use variable */
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.3s ease;
+        }
+        .zethapp-header .header-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary); /* Use variable */
+            flex-grow: 1; /* Allow TAB to take central space */
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+        .zethapp-header .dash-separator {
+            color: var(--text-secondary); /* Use variable */
+            font-size: 1.5rem; /* Larger dash */
+            margin: 0 5px; /* Space around dash */
+            transition: color 0.3s ease;
+        }
+        .zethapp-header .three-dots-icon {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary); /* Use variable */
+            transition: color 0.3s ease;
+        }
+
+        /* Zethapp Content Area */
+        .output-full-screen.zethapp-mode .output-content {
+            flex-grow: 1;
+            position: relative; /* Crucial for absolute positioning of images */
+            overflow: hidden; /* Hide overflow within the content area itself */
+            padding: 10px; /* Reduced padding for a terminal look */
+            background-color: var(--bg-primary); /* Use variable */
+            color: var(--text-primary); /* Use variable */
+            font-family: 'monospace', sans-serif; /* Use monospace font for terminal feel */
+            font-size: 1rem;
+            line-height: 1.5; /* Spacing for readability */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .output-full-screen.zethapp-mode .output-content img {
+            position: absolute;
+            max-width: 100%; /* Ensure images don't overflow the mobile screen */
+            max-height: 100%;
+            object-fit: contain; /* Contain image within its bounds */
+            transition: left 0.2s ease, top 0.2s ease; /* Smooth movement */
+        }
+
+        /* Blinking cursor for terminal feel */
+        .blinking-cursor {
+            font-weight: 100;
+            font-size: 1rem;
+            color: white;
+            -webkit-animation: 1s blink step-end infinite;
+            -moz-animation: 1s blink step-end infinite;
+            -ms-animation: 1s blink step-end infinite;
+            -o-animation: 1s blink step-end infinite;
+            animation: 1s blink step-end infinite;
+        }
+
+        @keyframes blink {
+            from, to { color: transparent }
+            50% { color: white }
+        }
+
+        @-moz-keyframes blink {
+            from, to { color: transparent }
+            50% { color: white }
+        }
+
+        @-webkit-keyframes blink {
+            from, to { color: transparent }
+            50% { color: white }
+        }
+
+        /* Utility class for hiding elements */
+        .hidden-element {
+            display: none !important; /* Added !important to force hide */
+        }
+
+        /* Menu Styling (common for all context menus) */
+        .context-menu {
+            position: absolute;
+            top: 50px; /* Position below the top bar */
+            background-color: var(--bg-tertiary); /* Use variable */
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            z-index: 999; /* Ensure it's on top of everything */
+            flex-direction: column; /* Menu items stack vertically */
+            transition: background-color 0.3s ease;
+        }
+        .context-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: var(--text-primary); /* Use variable */
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .context-menu-item:hover {
+            background-color: var(--border-color); /* Use border-color for hover */
+        }
+        .context-menu-item-icon {
+            font-size: 1.1rem;
+            margin-right: 10px;
+            color: var(--text-secondary); /* Use variable */
+        }
+
+        /* Specific positioning for file menu */
+        #fileMenu {
+            right: 15px; /* Align with right icons */
+        }
+
+        /* Specific positioning for lightbulb menu */
+        #lightbulbMenu {
+            right: 55px; /* Adjust right position based on lightbulb icon's actual position */
+        }
+
+        /* Specific positioning for three dots menu */
+        #threeDotsMenu {
+            right: 15px; /* Align with the three dots icon */
+        }
+
+        /* Side Drawer Styling */
+        .side-drawer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 70%; /* Adjust width as needed */
+            max-width: 300px; /* Max width for larger screens */
+            height: 100%;
+            background-color: var(--bg-secondary); /* Use variable */
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+            transform: translateX(-100%); /* Initially off-screen to the left */
+            transition: transform 0.3s ease-in-out, background-color 0.3s ease;
+            z-index: 1000; /* Ensure it's above everything else */
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* Allow drawer content to scroll */
+        }
+        .side-drawer.open {
+            transform: translateX(0); /* Slide into view */
+        }
+
+        .drawer-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay */
+            z-index: 999; /* Below drawer, above main content */
+            display: none; /* Hidden by default */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .drawer-overlay.visible {
+            display: block;
+            opacity: 1;
+        }
+
+        .drawer-header {
+            padding: 15px;
+            background-color: var(--bg-tertiary); /* Use variable */
+            color: var(--text-primary); /* Use variable */
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color); /* Use variable */
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        .drawer-section-title {
+            padding: 15px;
+            color: var(--text-dimmed); /* Use variable */
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color); /* Use variable */
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .drawer-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: var(--text-primary); /* Use variable */
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.3s ease, border-color 0.3s ease;
+            border-bottom: 1px solid var(--border-color); /* Use variable */
+        }
+        .drawer-item:last-child {
+            border-bottom: none; /* No border on the last item */
+        }
+        .drawer-item:hover {
+            background-color: var(--border-color); /* Use border-color for hover */
+        }
+        .drawer-item-icon {
+            font-size: 1.1rem;
+            margin-right: 10px;
+            color: var(--text-secondary); /* Use variable */
+            transition: color 0.3s ease;
+        }
+        .drawer-item.premium-badge {
+            color: var(--fab-bg); /* Yellow for premium */
+        }
+        .drawer-item.premium-badge .drawer-item-icon {
+            color: var(--fab-bg);
+        }
+
+        /* Save Modal Styling */
+        .save-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensure it's on top */
+        }
+
+        .save-modal-content {
+            background-color: var(--modal-bg); /* Use variable */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .save-modal-content h3 {
+            color: var(--text-primary); /* Use variable */
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+
+        .save-modal-content input[type="text"] {
+            background-color: var(--modal-input-bg); /* Use variable */
+            border: 1px solid var(--border-color); /* Use variable */
+            border-radius: 5px;
+            padding: 10px;
+            color: var(--modal-input-text); /* Use variable */
+            font-size: 1rem;
+            outline: none;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        .save-modal-content input[type="text"]::placeholder {
+            color: var(--modal-input-placeholder); /* Use variable */
+        }
+
+        .save-modal-buttons {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+
+        .save-modal-buttons button {
+            flex: 1;
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        .save-modal-buttons button.save-button {
+            background-color: var(--modal-button-save-bg); /* Use variable */
+            color: var(--text-primary); /* Use variable */
+        }
+
+        .save-modal-buttons button.save-button:hover {
+            background-color: var(--modal-button-save-hover-bg); /* Use variable */
+        }
+
+        .save-modal-buttons button.cancel-button {
+            background-color: var(--modal-button-cancel-bg); /* Use variable */
+            color: var(--text-primary); /* Use variable */
+        }
+
+        .save-modal-buttons button.cancel-button:hover {
+            background-color: var(--modal-button-cancel-hover-bg); /* Use variable */
+        }
+
+        /* Pip Modules Container Styling */
+        .pip-modules-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-secondary); /* Use variable */
+            color: var(--text-primary); /* Use variable */
+            display: flex;
+            flex-direction: column;
+            z-index: 100; /* Ensure it's on top of editor UI */
+            overflow: hidden; /* Hide scrollbars on the container itself */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .pip-modules-header {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-secondary); /* Use variable */
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color); /* Use variable */
+            flex-shrink: 0;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .pip-modules-header .back-button {
+            background: none;
+            border: none;
+            color: var(--text-primary); /* Use variable */
+            font-size: 1.5rem; /* Larger arrow */
+            cursor: pointer;
+            padding: 0;
+            margin-right: 15px;
+            line-height: 1; /* Align icon vertically */
+            transition: color 0.3s ease;
+        }
+        .pip-modules-header .header-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary); /* Use variable */
+            flex-grow: 1; /* Push other elements away */
+            text-align: center; /* Center the "Modules" title */
+            margin-right: 40px; /* Offset for back button width */
+            transition: color 0.3s ease;
+        }
+
+        .pip-modules-list {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto; /* Allow module list to scroll */
+            background-color: var(--bg-secondary); /* Use variable */
+            transition: background-color 0.3s ease;
+        }
+
+        .pip-module-item {
+            background-color: var(--pip-item-bg); /* Use variable */
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 10px; /* Space between items */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-primary); /* Use variable */
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.3s ease;
+        }
+        .pip-module-item:hover {
+            background-color: var(--pip-item-hover-bg); /* Use variable */
+        }
+        .pip-module-item .module-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            flex-grow: 1;
+        }
+        .pip-module-item .module-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .pip-module-item .module-description {
+            font-size: 0.8rem;
+            color: var(--pip-item-description-text); /* Use variable */
+            transition: color 0.3s ease;
+        }
+        .pip-module-item .module-version {
+            font-size: 0.9rem;
+            color: var(--pip-item-description-text); /* Use variable */
+            font-weight: 500;
+            flex-shrink: 0; /* Prevent version from shrinking */
+            transition: color 0.3s ease;
+        }
+
+        /* Settings Container Styling */
+        .settings-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--settings-bg); /* Use variable */
+            color: var(--settings-text); /* Use variable */
+            display: flex;
+            flex-direction: column;
+            z-index: 100; /* Ensure it's on top of editor UI */
+            overflow: hidden; /* Hide scrollbars on the container itself */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .settings-header {
+            display: flex;
+            align-items: center;
+            background-color: var(--settings-bg); /* Use variable */
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--settings-border); /* Use variable */
+            flex-shrink: 0;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .settings-header .back-button {
+            background: none;
+            border: none;
+            color: var(--settings-text); /* Use variable */
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            margin-right: 15px;
+            line-height: 1;
+            transition: color 0.3s ease;
+        }
+        .settings-header .header-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--settings-text); /* Use variable */
+            flex-grow: 1;
+            text-align: center;
+            margin-right: 40px; /* Offset for back button width */
+            transition: color 0.3s ease;
+        }
+
+        .settings-list {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto; /* Allow settings list to scroll */
+            background-color: var(--settings-bg); /* Use variable */
+            transition: background-color 0.3s ease;
+        }
+
+        .settings-item {
+            background-color: var(--settings-bg); /* Use variable */
+            border-bottom: 1px solid var(--settings-border); /* Use variable */
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--settings-text); /* Use variable */
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+        .settings-item:hover {
+            background-color: var(--settings-border); /* Use settings-border for hover */
+        }
+        .settings-item:last-child {
+            border-bottom: none; /* No border on the last item */
+        }
+        .settings-item .setting-label {
+            font-weight: 500;
+        }
+        .settings-item .setting-toggle {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .settings-item[data-state="on"] .setting-state-text {
+            color: var(--settings-toggle-on); /* Green for ON */
+            transition: color 0.3s ease;
+        }
+
+        /* Style for OFF state */
+        .settings-item[data-state="off"] .setting-state-text {
+            color: var(--settings-toggle-off); /* Gray for OFF */
+            transition: color 0.3s ease;
+        }
+
+        .settings-version {
+            padding: 15px;
+            font-size: 0.85rem;
+            color: var(--settings-version-text); /* Use variable */
+            text-align: center;
+            flex-shrink: 0;
+            transition: color 0.3s ease;
+        }
+
+        /* Share Modal Styling */
+        .share-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensure it's on top */
+        }
+
+        .share-modal-content {
+            background-color: var(--share-modal-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .share-modal-content h3 {
+            color: var(--share-modal-text);
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 10px;
+            transition: color 0.3s ease;
+        }
+
+        .share-modal-buttons {
+            display: flex;
+            flex-direction: column; /* Stack buttons vertically */
+            gap: 10px;
+        }
+
+        .share-modal-buttons button {
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease, color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--text-primary); /* Default text color for buttons */
+        }
+
+        .share-modal-buttons button.share-button {
+            background-color: var(--share-button-bg);
+            color: #f0f0f0; /* White text for share buttons */
+        }
+
+        .share-modal-buttons button.share-button:hover {
+            background-color: var(--share-button-hover-bg);
+        }
+
+        .share-modal-buttons button.cancel-button {
+            background-color: var(--share-button-cancel-bg);
+            color: #f0f0f0; /* White text for cancel button */
+        }
+
+        .share-modal-buttons button.cancel-button:hover {
+            background-color: var(--share-button-cancel-hover-bg);
+        }
+
+        .share-button-icon {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Side Drawer Overlay -->
+        <div id="drawerOverlay" class="drawer-overlay" onclick="toggleSideDrawer()"></div>
+
+        <!-- Side Drawer -->
+        <div id="sideDrawer" class="side-drawer">
+            <div class="drawer-header">
+                <span class="font-bold">new</span>
+            </div>
+            <div class="drawer-item">
+                Line: <span id="currentLineInfo">1/1</span>
+            </div>
+            <div class="drawer-item">
+                Line offset: <span id="lineOffsetInfo">0</span>
+            </div>
+
+            <div class="drawer-section-title">Premium</div>
+            <div class="drawer-item premium-badge" onclick="handleDrawerAction('Get premium')">
+                <span class="drawer-item-icon">🔒</span> Get premium
+            </div>
+
+            <div class="drawer-section-title">Run</div>
+            <div class="drawer-item" onclick="handleDrawerAction('Interpreter')">
+                <span class="drawer-item-icon">▶️</span> Interpreter
+            </div>
+            <div class="drawer-item" onclick="handleDrawerAction('Terminal')">
+                <span class="drawer-item-icon">💻</span> Terminal
+            </div>
+
+            <div class="drawer-section-title">Tools</div>
+            <div class="drawer-item" onclick="handleDrawerAction('Pip')">
+                <span class="drawer-item-icon">📦</span> Pip
+            </div>
+            <div class="drawer-item" onclick="handleDrawerAction('Share')">
+                <span class="drawer-item-icon">↗️</span> Share
+            </div>
+            <div class="drawer-item" onclick="handleDrawerAction('Pastebin')">
+                <span class="drawer-item-icon">📋</span> Pastebin
+            </div>
+            <div class="drawer-item" onclick="handleDrawerAction('Settings')">
+                <span class="drawer-item-icon">⚙️</span> Settings
+            </div>
+        </div>
+
+        <!-- Main Editor UI -->
+        <div id="editorUi" class="">
+            <!-- Top Bar -->
+            <div class="top-bar" id="topBar">
+                <div class="left-section">
+                    <span class="top-bar-icon" id="hamburgerIcon" onclick="toggleSideDrawer()">&#9776;</span> <!-- Hamburger icon -->
+                    <span class="top-bar-title" onclick="createNewFile()">new</span> <!-- Made "new" clickable -->
+                </div>
+                <div class="right-section">
+                    <span class="top-bar-icon" id="folderIcon" onclick="toggleFileMenu()">📁</span> <!-- Folder emoji -->
+                    <span class="top-bar-icon" id="lightbulbIcon" onclick="toggleLightbulbMenu()">💡</span> <!-- Lightbulb icon with click handler -->
+                    <span class="top-bar-icon" id="threeDotsIcon" onclick="toggleThreeDotsMenu()">&#8942;</span> <!-- Three dots vertical with click handler -->
+                </div>
+            </div>
+
+            <!-- Tabs Bar -->
+            <div class="tabs-bar" id="tabsBar">
+                <div class="tab-item active" data-tab-id="default-tab" onclick="switchTab(this)">new</div>
+                <!-- New tabs will be added here dynamically -->
+            </div>
+
+            <!-- Main Content Area (Editor only) -->
+            <div class="main-content" id="mainContent">
+                <div id="codeEditorContainer" class="code-editor-container">
+                    <div id="lineNumbers" class="line-numbers">1</div>
+                    <textarea id="codeEditor">using Zetha.System;
+
+Zetha namespace;
+{
+    Subject.static.void Main(string*args[])
+    {
+        Class
+        {
+            Subject.print("Hello, World!");
+        }
+    }
+}
+</textarea>
+                </div>
+                <!-- Image Suggestion Box -->
+                <div id="imageSuggestionBox" class="image-suggestion-box">
+                    <!-- Suggestions will be populated here -->
+                </div>
+            </div>
+
+            <!-- Floating Action Button (FAB) Wrapper -->
+            <div id="fabWrapper" class="fab-wrapper">
+                <!-- Floating Action Button (FAB) -->
+                <div class="fab-button" id="fabButton" onclick="runCode()">
+                    <span class="play-icon">&#9654;</span> <!-- Play icon -->
+                </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="bottom-bar" id="bottomBar">
+                <div class="bottom-bar-item" onclick="insertText('    ')">Tab</div>
+                <div class="bottom-bar-item separator">|</div>
+                <div class="bottom-bar-item" onclick="insertText(':')">:</div>
+                <div class="bottom-bar-item separator">|</div>
+                <div class="bottom-bar-item" onclick="insertText('\\')">\</div>
+                <div class="bottom-bar-item separator">|</div>
+                <div class="bottom-bar-item" onclick="insertParentheses()"> (</div>
+                <div class="bottom-bar-item separator">|</div>
+                <div class="bottom-bar-item" onclick="insertText(')')">)</div>
+                <div class="bottom-bar-item separator">|</div>
+                <div class="bottom-bar-item" onclick="insertText('=')">=</div>
+            </div>
+        </div>
+
+        <!-- File Menu (initially hidden by JS) -->
+        <div id="fileMenu" class="context-menu">
+            <div class="context-menu-item" onclick="handleFileMenuAction('New')">
+                <span class="context-menu-item-icon">+</span> New
+            </div>
+            <div class="context-menu-item" onclick="handleFileMenuAction('Open')">
+                <span class="context-menu-item-icon">📂</span> Open
+            </div>
+            <div class="context-menu-item" onclick="handleFileMenuAction('Save')">
+                <span class="context-menu-item-icon">💾</span> Save
+            </div>
+            <div class="context-menu-item" onclick="handleFileMenuAction('Save as')">
+                <span class="context-menu-item-icon">📝</span> Save as
+            </div>
+            <div class="context-menu-item" onclick="handleFileMenuAction('Close')">
+                <span class="context-menu-item-icon">✖️</span> Close
+            </div>
+            <div class="context-menu-item" onclick="handleFileMenuAction('Import image')">
+                <span class="context-menu-item-icon">🖼️</span> Import image
+            </div>
+        </div>
+
+        <!-- Lightbulb Menu (initially hidden by JS) -->
+        <div id="lightbulbMenu" class="context-menu">
+            <div class="context-menu-item" onclick="handleLightbulbMenuAction('Get names')">
+                <span class="context-menu-item-icon">A Z</span> Get names
+            </div>
+            <div class="context-menu-item" onclick="handleLightbulbMenuAction('Go to assignments')">
+                <span class="context-menu-item-icon">T</span> Go to assignments
+            </div>
+            <div class="context-menu-item" onclick="handleLightbulbMenuAction('Go to definitions')">
+                <span class="context-menu-item-icon">T</span> Go to definitions
+            </div>
+        </div>
+
+        <!-- Three Dots Menu (initially hidden by JS) -->
+        <div id="threeDotsMenu" class="context-menu">
+            <div class="context-menu-item" onclick="handleThreeDotsMenuAction('Undo')">
+                <span class="context-menu-item-icon">↩️</span> Undo
+            </div>
+            <div class="context-menu-item" onclick="handleThreeDotsMenuAction('Redo')">
+                <span class="context-menu-item-icon">↪️</span> Redo
+            </div>
+            <div class="context-menu-item" onclick="handleThreeDotsMenuAction('Search')">
+                <span class="context-menu-item-icon">🔍</span> Search
+            </div>
+            <div class="context-menu-item" onclick="handleThreeDotsMenuAction('Go to line')">
+                <span class="context-menu-item-icon">〰️</span> Go to line
+            </div>
+        </div>
+
+        <!-- Full-screen Output Console (initially hidden) -->
+        <div id="outputConsole" class="output-full-screen hidden-element">
+            <!-- Default header (shown in console mode) -->
+            <div class="output-full-screen-header" id="defaultOutputHeader">
+                <button class="back-button" onclick="hideOutputFullScreen()">&#8592;</button> <!-- Left arrow icon -->
+                <span class="header-title">Output</span>
+            </div>
+
+            <!-- Zethapp mode header (shown in zethapp mode) -->
+            <div class="zethapp-header hidden-element" id="zethappOutputHeader">
+                <button class="back-button" onclick="hideOutputFullScreen()">&#8592;</button>
+                <span class="header-title">TAB</span>
+                <span class="dash-separator">-</span>
+                <span class="three-dots-icon" onclick="handleZethappThreeDotsMenu()">&#8942;</span>
+            </div>
+
+            <div class="output-content"></div>
+        </div>
+
+        <!-- Pip Modules Container (initially hidden) -->
+        <div id="pipModulesContainer" class="pip-modules-container hidden-element">
+            <div class="pip-modules-header">
+                <button class="back-button" onclick="hidePipModules()">&#8592;</button>
+                <span class="header-title">Modules</span>
+            </div>
+            <div class="pip-modules-list">
+                <!-- Module items will be dynamically inserted or hardcoded here -->
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">Troxlib</span>
+                        <span class="module-description">A library for advanced data manipulation.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">Zethmath</span>
+                        <span class="module-description">Mathematical functions for Zetha.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">ZethGrandGL</span>
+                        <span class="module-description">Graphics library for Zetha applications.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">TroxWeb</span>
+                        <span class="module-description">Web development utilities.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">ZethAPK</span>
+                        <span class="module-description">Tools for Android package creation.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">ZethFlow</span>
+                        <span class="module-description">Flow control and asynchronous operations.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">Zwift</span>
+                        <span class="module-description">Fast data processing library.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">Zexe</span>
+                        <span class="module-description">Executable file management.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">Xandrome</span>
+                        <span class="module-description">Cross-platform development tools.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">Sci-Zi learn</span>
+                        <span class="module-description">Scientific computing and machine learning.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">Time</span>
+                        <span class="module-description">Time and date utilities.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">Random</span>
+                        <span class="module-description">Random number generation.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">PNBf</span>
+                        <span class="module-description">Private Network Backend framework tools.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">ZethSQL</span>
+                        <span class="module-description">SQL database integration.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">Zarser</span>
+                        <span class="module-description">Parsing and lexical analysis.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+                <div class="pip-module-item">
+                    <div class="module-info">
+                        <span class="module-name">Zexer</span>
+                        <span class="module-description">Execution environment management.</span>
+                    </div>
+                    <span class="module-version">0.0.1</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Container (initially hidden) -->
+        <div id="settingsContainer" class="settings-container hidden-element">
+            <div class="settings-header">
+                <button class="back-button" onclick="hideSettings()">&#8592;</button>
+                <span class="header-title">Settings</span>
+            </div>
+            <div class="settings-list">
+                <div class="settings-item" data-setting-id="dark-mode" data-state="on" onclick="toggleSetting(this)">
+                    <span class="setting-label">Dark mode</span>
+                    <span class="setting-toggle"><span class="setting-state-text">ON</span></span>
+                </div>
+                <div class="settings-item" data-setting-id="show-errors" data-state="on" onclick="toggleSetting(this)">
+                    <span class="setting-label">Show Errors</span>
+                    <span class="setting-toggle"><span class="setting-state-text">ON</span></span>
+                </div>
+                <div class="settings-item" data-setting-id="keyboard-suggestions" data-state="on" onclick="toggleSetting(this)">
+                    <span class="setting-label">Show keyboard suggestions</span>
+                    <span class="setting-toggle"><span class="setting-state-text">ON</span></span>
+                </div>
+                <div class="settings-item" data-setting-id="smooth-interaction" data-state="on" onclick="toggleSetting(this)">
+                    <span class="setting-label">Smooth Interaction</span>
+                    <span class="setting-toggle"><span class="setting-state-text">ON</span></span>
+                </div>
+                <div class="settings-item" data-setting-id="runtime-identificator" data-state="on" onclick="toggleSetting(this)">
+                    <span class="setting-label">Runtime identificator</span>
+                    <span class="setting-toggle"><span class="setting-state-text">ON</span></span>
+                </div>
+            </div>
+            <div class="settings-version">
+                Version: 0.0.0.1
+            </div>
+        </div>
+
+        <!-- Hidden file input for image import -->
+        <input type="file" id="imageFileInput" accept="image/*" class="hidden-element">
+        <!-- Hidden file input for .zetha file open -->
+        <input type="file" id="zethaFileInput" accept=".zetha" class="hidden-element">
+
+        <!-- Custom Save Modal -->
+        <div id="saveModalOverlay" class="save-modal-overlay hidden-element">
+            <div class="save-modal-content">
+                <h3>Save File</h3>
+                <input type="text" id="saveFileNameInput" placeholder="Enter filename (e.g., myprogram)">
+                <div class="save-modal-buttons">
+                    <button class="save-button" id="confirmSaveButton">Save</button>
+                    <button class="cancel-button" id="cancelSaveButton">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Share Modal -->
+        <div id="shareModalOverlay" class="share-modal-overlay hidden-element">
+            <div class="share-modal-content">
+                <h3>Share Code Via</h3>
+                <div class="share-modal-buttons">
+                    <button class="share-button" onclick="shareCodeViaBrowser('Chrome')">
+                        <span class="share-button-icon">🌐</span> Share with Chrome
+                    </button>
+                    <button class="share-button" onclick="shareCodeViaBrowser('Firefox')">
+                        <span class="share-button-icon">🦊</span> Share with Firefox
+                    </button>
+                    <button class="share-button" onclick="shareCodeViaBrowser('Edge')">
+                        <span class="share-button-icon">🧭</span> Share with Edge
+                    </button>
+                    <button class="share-button" onclick="shareCodeViaBrowser('Safari')">
+                        <span class="share-button-icon">🧭</span> Share with Safari
+                    </button>
+                    <button class="cancel-button" onclick="hideShareModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global object to store variables for the Zetha language
+        let variables = {};
+        // Object to store imported modules and their functions
+        let importedModules = {};
+        // Define the default boilerplate code for new files
+        const defaultBoilerplate = `using Zetha.System;
+
+Zetha namespace;
+{
+    Subject.static.void Main(string*args[])
+    {
+        Class
+        {
+            Subject.print("Hello, World!");
+        }
+    }
+}
+`;
+
+        // To store code for each tab (simple in-memory storage)
+        let fileContents = {
+            'default-tab': defaultBoilerplate // Initial content for default tab
+        };
+        let currentActiveTabId = 'default-tab'; // Track the currently active tab
+        let tabCounter = 0; // For unique new tab names
+
+        const codeEditor = document.getElementById('codeEditor');
+        const lineNumbersDiv = document.getElementById('lineNumbers');
+        const outputConsole = document.getElementById('outputConsole');
+        const outputContentDiv = outputConsole.querySelector('.output-content');
+        const defaultOutputHeader = document.getElementById('defaultOutputHeader'); // Get default header
+        const zethappOutputHeader = document.getElementById('zethappOutputHeader'); // Get zethapp header
+        const pipModulesContainer = document.getElementById('pipModulesContainer'); // Get pip modules container
+        const settingsContainer = document.getElementById('settingsContainer'); // Get settings container
+        const tabsBar = document.getElementById('tabsBar');
+        const fileMenu = document.getElementById('fileMenu'); // Get file menu element
+        const lightbulbMenu = document.getElementById('lightbulbMenu'); // Get lightbulb menu element
+        const threeDotsMenu = document.getElementById('threeDotsMenu'); // Get three dots menu element
+        const sideDrawer = document.getElementById('sideDrawer'); // Get side drawer element
+        const drawerOverlay = document.getElementById('drawerOverlay'); // Get drawer overlay element
+        const currentLineInfo = document.getElementById('currentLineInfo');
+        const lineOffsetInfo = document.getElementById('lineOffsetInfo');
+        const imageFileInput = document.getElementById('imageFileInput'); // Get the hidden file input
+        const zethaFileInput = document.getElementById('zethaFileInput'); // Get the hidden .zetha file input
+
+        // Save Modal elements
+        const saveModalOverlay = document.getElementById('saveModalOverlay');
+        const saveFileNameInput = document.getElementById('saveFileNameInput');
+        const confirmSaveButton = document.getElementById('confirmSaveButton');
+        const cancelSaveButton = document.getElementById('cancelSaveButton');
+
+        // Share Modal elements
+        const shareModalOverlay = document.getElementById('shareModalOverlay');
+
+        // UI elements for toggling visibility
+        const editorUi = document.getElementById('editorUi');
+        const fabWrapper = document.getElementById('fabWrapper'); // Get FAB wrapper element
+
+        // New global variables for image handling
+        let importedImages = {}; // Stores { "filename.png": { src: "data:...", x: 0, y: 0, element: null } }
+        let currentOutputMode = 'console'; // 'console' or 'zethapp'
+        let cursorInterval; // To store the interval ID for the blinking cursor
+
+        // Global settings state
+        let showErrorsEnabled = true; // Default to ON
+        let darkModeEnabled = true; // Default to ON, controlled by 'Dark mode' setting
+
+        // Image suggestion box elements
+        const imageSuggestionBox = document.getElementById('imageSuggestionBox');
+
+
+        /**
+         * Inserts text into the code editor at the current cursor position.
+         * @param {string} text - The text to insert.
+         */
+        function insertText(text) {
+            const start = codeEditor.selectionStart;
+            const end = codeEditor.selectionEnd;
+            const value = codeEditor.value;
+
+            codeEditor.value = value.substring(0, start) + text + value.substring(end);
+            codeEditor.selectionStart = codeEditor.selectionEnd = start + text.length;
+            updateLineNumbers(); // Update line numbers and cursor info
+            codeEditor.focus(); // Keep focus on the editor
+        }
+
+        /**
+         * Inserts '()' into the code editor and places the cursor in the middle.
+         */
+        function insertParentheses() {
+            const start = codeEditor.selectionStart;
+            const end = codeEditor.selectionEnd;
+            const value = codeEditor.value;
+
+            codeEditor.value = value.substring(0, start) + '()' + value.substring(end);
+            codeEditor.selectionStart = codeEditor.selectionEnd = start + 1; // Place cursor inside
+            updateLineNumbers(); // Update line numbers and cursor info
+            codeEditor.focus(); // Keep focus on the editor
+        }
+
+        /**
+         * Updates the line numbers displayed next to the editor.
+         */
+        function updateLineNumbers() {
+            const code = codeEditor.value;
+            const lines = (code.endsWith('\n') ? code : code + '\n').split('\n');
+            let numbers = '';
+            for (let i = 1; i < lines.length; i++) {
+                numbers += i + '\n';
+            }
+            lineNumbersDiv.textContent = numbers;
+            lineNumbersDiv.style.height = codeEditor.clientHeight + 'px';
+            updateLineAndOffsetInfo();
+        }
+
+        /**
+         * Updates the line and line offset information in the side drawer.
+         */
+        function updateLineAndOffsetInfo() {
+            const cursorPosition = codeEditor.selectionStart;
+            const textBeforeCursor = codeEditor.value.substring(0, cursorPosition);
+            const linesBeforeCursor = textBeforeCursor.split('\n');
+            const currentLine = linesBeforeCursor.length;
+            const currentLineStart = textBeforeCursor.lastIndexOf('\n') + 1;
+            const lineOffset = cursorPosition - currentLineStart;
+            const totalLines = codeEditor.value.split('\n').length;
+
+            currentLineInfo.textContent = `${currentLine}/${totalLines}`;
+            lineOffsetInfo.textContent = lineOffset;
+        }
+
+        /**
+         * Synchronizes the scroll position between the textarea and the line numbers div.
+         */
+        function syncScroll() {
+            lineNumbersDiv.scrollTop = codeEditor.scrollTop;
+        }
+
+        // Attach event listeners for input and scroll
+        codeEditor.addEventListener('input', () => {
+            updateLineNumbers();
+            // Save current editor content to the active tab's file content
+            fileContents[currentActiveTabId] = codeEditor.value;
+            checkImageSuggestion(); // Check for image suggestions on every input
+        });
+        codeEditor.addEventListener('scroll', syncScroll);
+        codeEditor.addEventListener('keyup', updateLineAndOffsetInfo); // Update on keyup for cursor movement
+        codeEditor.addEventListener('mouseup', updateLineAndOffsetInfo); // Update on mouseup for click/drag
+        window.addEventListener('resize', updateLineNumbers);
+
+        // Initial setup when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOMContentLoaded fired.");
+            // Set initial content for the default tab
+            codeEditor.value = fileContents['default-tab'];
+            updateLineNumbers();
+
+            // Ensure initial display states are correct
+            outputConsole.classList.add('hidden-element');
+            outputConsole.style.display = 'none'; // Explicitly hide output console
+            pipModulesContainer.classList.add('hidden-element'); // Ensure Pip Modules is hidden
+            pipModulesContainer.style.display = 'none'; // Explicitly hide Pip Modules
+            settingsContainer.classList.add('hidden-element'); // Ensure Settings is hidden
+            settingsContainer.style.display = 'none'; // Explicitly hide Settings
+            shareModalOverlay.classList.add('hidden-element'); // Ensure Share Modal is hidden
+            shareModalOverlay.style.display = 'none'; // Explicitly hide Share Modal
+            imageSuggestionBox.classList.add('hidden-element'); // Ensure Image Suggestion Box is hidden
+            imageSuggestionBox.style.display = 'none'; // Explicitly hide Image Suggestion Box
+
+
+            editorUi.style.display = 'flex'; // Ensure editor is visible
+            fabWrapper.style.display = 'flex'; // Ensure FAB is visible
+            defaultOutputHeader.style.display = 'flex'; // Ensure default header is visible
+            zethappOutputHeader.classList.add('hidden-element'); // Ensure zethapp header is hidden
+
+            // Explicitly hide all menus and drawer on load using style.display
+            fileMenu.style.display = 'none';
+            lightbulbMenu.style.display = 'none';
+            threeDotsMenu.style.display = 'none';
+            sideDrawer.classList.remove('open');
+            drawerOverlay.classList.remove('visible');
+
+            // Ensure save modal is hidden on load with both class and direct style
+            saveModalOverlay.classList.add('hidden-element');
+            saveModalOverlay.style.display = 'none'; // Direct style override
+            console.log("Save modal hidden on load: classList.contains('hidden-element')", saveModalOverlay.classList.contains('hidden-element'), "style.display", saveModalOverlay.style.display);
+
+
+            // Attach event listeners for the save modal buttons here
+            confirmSaveButton.addEventListener('click', () => {
+                console.log("Confirm Save button clicked.");
+                const codeContent = codeEditor.value;
+                let fileName = saveFileNameInput.value.trim();
+
+                if (fileName) {
+                    // Ensure it ends with .zetha
+                    if (!fileName.toLowerCase().endsWith('.zetha')) {
+                        fileName += '.zetha';
+                    }
+
+                    const blob = new Blob([codeContent], { type: 'application/octet-stream' }); // Changed type here
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a); // Required for Firefox
+                    a.click();
+                    document.body.removeChild(a); // Clean up
+                    URL.revokeObjectURL(url); // Release the object URL
+
+                    appendOutput(`File '${fileName}' saved successfully.`);
+                    hideSaveModal();
+                } else {
+                    appendOutput("File name cannot be empty. Save cancelled.");
+                    // Optionally, you could keep the modal open and highlight the input
+                }
+            });
+
+            cancelSaveButton.addEventListener('click', () => {
+                console.log("Cancel Save button clicked.");
+                appendOutput("File save cancelled.");
+                hideSaveModal();
+            });
+        });
+
+        /**
+         * Clears the output console.
+         */
+        function clearOutput() {
+            outputContentDiv.textContent = ''; // Clear all content, including "Output:"
+            // Remove all image elements from the output content div
+            const images = outputContentDiv.querySelectorAll('img');
+            images.forEach(img => img.remove());
+        }
+
+        /**
+         * Appends a message to the output console.
+         * @param {string} message - The message to append.
+         */
+        function appendOutput(message) {
+            // If "Show Errors" is off and the message is an error, do not display it.
+            if (!showErrorsEnabled && message.startsWith('ERROR')) {
+                console.warn("Error message suppressed due to 'Show Errors' setting being off:", message);
+                return;
+            }
+
+            // Remove existing cursor before appending new text
+            const existingCursor = outputContentDiv.querySelector('.blinking-cursor');
+            if (existingCursor) {
+                existingCursor.remove();
+            }
+
+            // Append the new message
+            const textNode = document.createTextNode(message + '\n');
+            outputContentDiv.appendChild(textNode);
+
+            // Add the blinking cursor after the new text
+            const cursorSpan = document.createElement('span');
+            cursorSpan.classList.add('blinking-cursor');
+            cursorSpan.textContent = '█'; // Solid block character for cursor
+            outputContentDiv.appendChild(cursorSpan);
+
+            outputContentDiv.scrollTop = outputContentDiv.scrollHeight;
+        }
+
+        /**
+         * Resolves a value, handling variable references.
+         * If the value matches a variable name, its stored value is returned.
+         * Otherwise, the original value is returned.
+         * @param {string} val - The string to resolve.
+         * @returns {any} The resolved value.
+         */
+        function resolveValue(val) {
+            val = val.trim();
+            if (variables.hasOwnProperty(val)) {
+                return variables[val];
+            }
+            // Check for string literals (double or single quotes)
+            if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                return val.substring(1, val.length - 1);
+            }
+            // Check for number literals
+            if (!isNaN(parseFloat(val)) && isFinite(val)) {
+                return parseFloat(val);
+            }
+            return val; // Return as is if not a variable, string, or number
+        }
+
+        /**
+         * Shows the full-screen output console and hides the editor UI.
+         */
+        function showOutputFullScreen() {
+            console.log("showOutputFullScreen called.");
+            editorUi.classList.add('hidden-element');
+            editorUi.style.display = 'none'; // Explicitly hide editor
+            fabWrapper.classList.add('hidden-element');
+            fabWrapper.style.display = 'none'; // Explicitly hide FAB
+            pipModulesContainer.classList.add('hidden-element'); // Ensure Pip Modules is hidden
+            pipModulesContainer.style.display = 'none'; // Explicitly hide Pip Modules
+            settingsContainer.classList.add('hidden-element'); // Ensure Settings is hidden
+            settingsContainer.style.display = 'none'; // Explicitly hide Settings
+            shareModalOverlay.classList.add('hidden-element'); // Ensure Share Modal is hidden
+            shareModalOverlay.style.display = 'none'; // Explicitly hide Share Modal
+            imageSuggestionBox.classList.add('hidden-element'); // Ensure Image Suggestion Box is hidden
+            imageSuggestionBox.style.display = 'none'; // Explicitly hide Image Suggestion Box
+
+
+            outputConsole.classList.remove('hidden-element');
+            outputConsole.style.display = 'flex'; // Explicitly show output console
+
+            // Hide all menus and drawer when showing output
+            hideFileMenu();
+            hideLightbulbMenu();
+            hideThreeDotsMenu();
+            hideSideDrawer();
+            hideSaveModal();
+            hideShareModal();
+            hideImageSuggestionBox();
+            hidePipModules();
+            hideSettings();
+
+            console.log("After showOutputFullScreen:");
+            console.log("  editorUi computed style display:", window.getComputedStyle(editorUi).display);
+            console.log("  fabWrapper computed style display:", window.getComputedStyle(fabWrapper).display);
+            console.log("  outputConsole computed style display:", window.getComputedStyle(outputConsole).display);
+        }
+
+        /**
+         * Hides the full-screen output console and shows the editor UI.
+         */
+        function hideOutputFullScreen() {
+            console.log("hideOutputFullScreen called.");
+            outputConsole.classList.add('hidden-element');
+            outputConsole.style.display = 'none'; // Explicitly hide output console
+
+            // Reset output console style to default when hiding
+            outputConsole.classList.remove('zethapp-mode');
+            defaultOutputHeader.style.display = 'flex'; // Show default header again
+            zethappOutputHeader.classList.add('hidden-element'); // Hide zethapp header
+            outputContentDiv.classList.remove('zethapp-mode');
+            outputContentDiv.style.padding = '15px';
+            outputContentDiv.style.overflowY = 'auto';
+            outputContentDiv.style.position = 'static';
+            outputContentDiv.style.backgroundColor = 'var(--bg-primary)'; // Reset background to theme variable
+            outputContentDiv.style.color = 'var(--text-primary)'; // Default text color to theme variable
+            outputContentDiv.style.fontFamily = 'monospace'; // Default font
+            currentOutputMode = 'console';
+            // Stop and clear the blinking cursor interval
+            if (cursorInterval) {
+                clearInterval(cursorInterval);
+                cursorInterval = null;
+            }
+            // Remove any lingering cursor element
+            const existingCursor = outputContentDiv.querySelector('.blinking-cursor');
+            if (existingCursor) {
+                existingCursor.remove();
+            }
+
+            editorUi.classList.remove('hidden-element');
+            editorUi.style.display = 'flex'; // Explicitly show editor
+            fabWrapper.classList.remove('hidden-element');
+            fabWrapper.style.display = 'flex'; // Explicitly show FAB (it's a flex container)
+
+            console.log("After hideOutputFullScreen:");
+            console.log("  editorUi computed style display:", window.getComputedStyle(editorUi).display);
+            console.log("  fabWrapper computed style display:", window.getComputedStyle(fabWrapper).display);
+            console.log("  outputConsole computed style display:", window.getComputedStyle(outputConsole).display);
+        }
+
+        /**
+         * Shows the Pip Modules container and hides other UI elements.
+         */
+        function showPipModules() {
+            console.log("showPipModules called.");
+            editorUi.classList.add('hidden-element');
+            editorUi.style.display = 'none';
+            fabWrapper.classList.add('hidden-element');
+            fabWrapper.style.display = 'none';
+            outputConsole.classList.add('hidden-element');
+            outputConsole.style.display = 'none';
+            settingsContainer.classList.add('hidden-element'); // Ensure Settings is hidden
+            settingsContainer.style.display = 'none'; // Explicitly hide Settings
+            shareModalOverlay.classList.add('hidden-element'); // Ensure Share Modal is hidden
+            shareModalOverlay.style.display = 'none'; // Explicitly hide Share Modal
+            imageSuggestionBox.classList.add('hidden-element'); // Ensure Image Suggestion Box is hidden
+            imageSuggestionBox.style.display = 'none'; // Explicitly hide Image Suggestion Box
+
+
+            pipModulesContainer.classList.remove('hidden-element');
+            pipModulesContainer.style.display = 'flex';
+
+            // Close other menus/drawer if open
+            hideFileMenu();
+            hideLightbulbMenu();
+            hideThreeDotsMenu();
+            hideSideDrawer();
+            hideSaveModal(); // Ensure save modal is hidden
+            hideShareModal();
+            hideImageSuggestionBox();
+            hideSettings();
+        }
+
+        /**
+         * Hides the Pip Modules container and shows the editor UI.
+         */
+        function hidePipModules() {
+            console.log("hidePipModules called.");
+            pipModulesContainer.classList.add('hidden-element');
+            pipModulesContainer.style.display = 'none';
+
+            editorUi.classList.remove('hidden-element');
+            editorUi.style.display = 'flex';
+            fabWrapper.classList.remove('hidden-element');
+            fabWrapper.style.display = 'flex';
+        }
+
+        /**
+         * Shows the Settings container and hides other UI elements.
+         */
+        function showSettings() {
+            console.log("showSettings called.");
+            editorUi.classList.add('hidden-element');
+            editorUi.style.display = 'none';
+            fabWrapper.classList.add('hidden-element');
+            fabWrapper.style.display = 'none';
+            outputConsole.classList.add('hidden-element');
+            outputConsole.style.display = 'none';
+            pipModulesContainer.classList.add('hidden-element'); // Ensure Pip Modules is hidden
+            pipModulesContainer.style.display = 'none'; // Explicitly hide Pip Modules
+            shareModalOverlay.classList.add('hidden-element'); // Ensure Share Modal is hidden
+            shareModalOverlay.style.display = 'none'; // Explicitly hide Share Modal
+            imageSuggestionBox.classList.add('hidden-element'); // Ensure Image Suggestion Box is hidden
+            imageSuggestionBox.style.display = 'none'; // Explicitly hide Image Suggestion Box
+
+
+            settingsContainer.classList.remove('hidden-element');
+            settingsContainer.style.display = 'flex';
+
+            // Close other menus/drawer if open
+            hideFileMenu();
+            hideLightbulbMenu();
+            hideThreeDotsMenu();
+            hideSideDrawer();
+            hideSaveModal(); // Ensure save modal is hidden
+            hideShareModal();
+            hideImageSuggestionBox();
+            hidePipModules();
+        }
+
+        /**
+         * Hides the Settings container and shows the editor UI.
+         */
+        function hideSettings() {
+            console.log("hideSettings called.");
+            settingsContainer.classList.add('hidden-element');
+            settingsContainer.style.display = 'none';
+
+            editorUi.classList.remove('hidden-element');
+            editorUi.style.display = 'flex';
+            fabWrapper.classList.remove('hidden-element');
+            fabWrapper.style.display = 'flex';
+        }
+
+        /**
+         * Toggles the state of a setting (ON/OFF).
+         * @param {HTMLElement} element - The settings-item div that was clicked.
+         */
+        function toggleSetting(element) {
+            const settingId = element.dataset.settingId; // Get the unique ID for the setting
+            let currentState = element.dataset.state;
+            let newState = currentState === 'on' ? 'off' : 'on';
+            element.dataset.state = newState;
+
+            const stateTextElement = element.querySelector('.setting-state-text');
+            if (stateTextElement) {
+                stateTextElement.textContent = newState.toUpperCase();
+            }
+
+            // Special handling based on setting ID
+            switch (settingId) {
+                case 'dark-mode':
+                    darkModeEnabled = (newState === 'on');
+                    if (darkModeEnabled) {
+                        document.body.classList.remove('light-theme');
+                        appendOutput("Dark mode turned ON. Theme switched to Dark.");
+                    } else {
+                        document.body.classList.add('light-theme');
+                        appendOutput("Dark mode turned OFF. Theme switched to Light.");
+                    }
+                    break;
+                case 'show-errors':
+                    showErrorsEnabled = (newState === 'on');
+                    appendOutput(`'Show Errors' turned ${newState.toUpperCase()}.`);
+                    break;
+                case 'keyboard-suggestions':
+                    appendOutput(`'Show keyboard suggestions' turned ${newState.toUpperCase()}. (Functionality not implemented)`);
+                    break;
+                case 'smooth-interaction':
+                    appendOutput(`'Smooth Interaction' turned ${newState.toUpperCase()}. (Functionality not implemented)`);
+                    break;
+                case 'runtime-identificator':
+                    appendOutput(`'Runtime identificator' turned ${newState.toUpperCase()}. (Functionality not implemented)`);
+                    break;
+                default:
+                    appendOutput(`Setting '${settingId}' turned ${newState.toUpperCase()}.`);
+            }
+        }
+
+        /**
+         * Hides the side drawer.
+         */
+        function hideSideDrawer() {
+            sideDrawer.classList.remove('open');
+            drawerOverlay.classList.remove('visible');
+        }
+
+        /**
+         * Hides the file menu.
+         */
+        function hideFileMenu() {
+            fileMenu.style.display = 'none';
+        }
+
+        /**
+         * Hides the lightbulb menu.
+         */
+        function hideLightbulbMenu() {
+            lightbulbMenu.style.display = 'none';
+        }
+
+        /**
+         * Hides the three dots menu.
+         */
+        function hideThreeDotsMenu() {
+            threeDotsMenu.style.display = 'none';
+        }
+
+        /**
+         * Toggles the visibility of the file menu.
+         */
+        function toggleFileMenu() {
+            console.log("Folder icon clicked!");
+            // Close other menus/drawer if open
+            hideLightbulbMenu();
+            hideThreeDotsMenu();
+            hideSideDrawer();
+            hideSaveModal(); // Ensure save modal is hidden
+            hideShareModal(); // Ensure share modal is hidden
+            hideImageSuggestionBox(); // Ensure image suggestion box is hidden
+            hidePipModules();
+            hideSettings();
+
+
+            if (fileMenu.style.display === 'none' || fileMenu.style.display === '') {
+                fileMenu.style.display = 'flex';
+                console.log("File Menu display set to flex");
+            } else {
+                fileMenu.style.display = 'none';
+                console.log("File Menu display set to none");
+            }
+        }
+
+        /**
+         * Toggles the visibility of the lightbulb menu.
+         */
+        function toggleLightbulbMenu() {
+            console.log("Lightbulb icon clicked!");
+            // Close other menus/drawer if open
+            hideFileMenu();
+            hideThreeDotsMenu();
+            hideSideDrawer();
+            hideSaveModal(); // Ensure save modal is hidden
+            hideShareModal(); // Ensure share modal is hidden
+            hideImageSuggestionBox(); // Ensure image suggestion box is hidden
+            hidePipModules();
+            hideSettings();
+
+
+            if (lightbulbMenu.style.display === 'none' || lightbulbMenu.style.display === '') {
+                lightbulbMenu.style.display = 'flex';
+                console.log("Lightbulb Menu display set to flex");
+            } else {
+                lightbulbMenu.style.display = 'none';
+                console.log("Lightbulb Menu display set to none");
+            }
+        }
+
+        /**
+         * Toggles the visibility of the three dots menu.
+         */
+        function toggleThreeDotsMenu() {
+            console.log("Three dots icon clicked!");
+            // Close other menus/drawer if open
+            hideFileMenu();
+            hideLightbulbMenu();
+            hideSideDrawer();
+            hideSaveModal(); // Ensure save modal is hidden
+            hideShareModal(); // Ensure share modal is hidden
+            hideImageSuggestionBox(); // Ensure image suggestion box is hidden
+            hidePipModules();
+            hideSettings();
+
+
+            if (threeDotsMenu.style.display === 'none' || threeDotsMenu.style.display === '') {
+                threeDotsMenu.style.display = 'flex';
+                console.log("Three Dots Menu display set to flex");
+            } else {
+                threeDotsMenu.style.display = 'none';
+                console.log("Three Dots Menu display set to none");
+            }
+        }
+
+        /**
+         * Toggles the visibility of the side drawer.
+         */
+        function toggleSideDrawer() {
+            console.log("Hamburger icon clicked!");
+            // Close other menus if open
+            hideFileMenu();
+            hideLightbulbMenu();
+            hideThreeDotsMenu();
+            hideSaveModal(); // Ensure save modal is hidden
+            hideShareModal(); // Ensure share modal is hidden
+            hideImageSuggestionBox(); // Ensure image suggestion box is hidden
+            hidePipModules();
+            hideSettings();
+
+            sideDrawer.classList.toggle('open');
+            drawerOverlay.classList.toggle('visible');
+        }
+
+        /**
+         * Handles actions triggered by the file menu.
+         * @param {string} action - The action to perform (e.g., 'New', 'Open', 'Save').
+         */
+        function handleFileMenuAction(action) {
+            toggleFileMenu(); // Hide menu after action
+
+            switch (action) {
+                case 'New':
+                    createNewFile();
+                    break;
+                case 'Open':
+                    openZethaFilePicker(); // Call the new function to open .zetha file picker
+                    break;
+                case 'Save':
+                    showSaveModal(); // Show the custom save modal
+                    break;
+                case 'Save as':
+                    appendOutput("Action: Save file as (Not fully implemented in this demo)");
+                    break;
+                case 'Close':
+                    closeCurrentTab();
+                    break;
+                case 'Import image':
+                    openImageFilePicker(); // Call the function to open image file picker
+                    break;
+                default:
+                    appendOutput(`Unknown file menu action: ${action}`);
+            }
+        }
+
+        /**
+         * Handles actions triggered by the lightbulb menu.
+         * @param {string} action - The action to perform (e.g., 'Get names', 'Go to assignments').
+         */
+        function handleLightbulbMenuAction(action) {
+            toggleLightbulbMenu(); // Hide menu after action
+
+            switch (action) {
+                case 'Get names':
+                    appendOutput("Action: Get names (Not fully implemented in this demo)");
+                    break;
+                case 'Go to assignments':
+                    appendOutput("Action: Go to assignments (Not fully implemented in this demo)");
+                    break;
+                case 'Go to definitions':
+                    appendOutput("Action: Go to definitions (Not fully implemented in this demo)");
+                    break;
+                default:
+                    appendOutput(`Unknown lightbulb menu action: ${action}`);
+            }
+        }
+
+        /**
+         * Handles actions triggered by the three dots menu.
+         * @param {string} action - The action to perform (e.g., 'Undo', 'Redo', 'Search').
+         */
+        function handleThreeDotsMenuAction(action) {
+            toggleThreeDotsMenu(); // Hide menu after action
+
+            switch (action) {
+                case 'Undo':
+                    appendOutput("Action: Undo (Not fully implemented in this demo)");
+                    break;
+                case 'Redo':
+                    appendOutput("Action: Redo (Not fully implemented in this demo)");
+                    break;
+                case 'Search':
+                    appendOutput("Action: Search (Not fully implemented in this demo)");
+                    break;
+                case 'Go to line':
+                    appendOutput("Action: Go to line (Not fully implemented in this demo)");
+                    break;
+                default:
+                    appendOutput(`Unknown three dots menu action: ${action}`);
+            }
+        }
+
+        /**
+         * Handles actions triggered by the side drawer menu.
+         * @param {string} action - The action to perform.
+         */
+        function handleDrawerAction(action) {
+            toggleSideDrawer(); // Close drawer after action
+
+            switch (action) {
+                case 'New':
+                    createNewFile();
+                    break;
+                case 'Interpreter':
+                    runCode(); // Reuse existing runCode function
+                    break;
+                case 'Get premium':
+                    appendOutput("Action: Get premium (Not fully implemented in this demo)");
+                    break;
+                case 'Terminal':
+                    appendOutput("Action: Terminal (Not fully implemented in this demo)");
+                    break;
+                case 'Pip':
+                    showPipModules(); // Show the Pip Modules screen
+                    break;
+                case 'Share':
+                    showShareModal(); // Show the Share modal
+                    break;
+                case 'Pastebin':
+                    sendCodeToPastebin(); // Call the new Pastebin function
+                    break;
+                case 'Settings':
+                    showSettings(); // Show the Settings screen
+                    break;
+                default:
+                    appendOutput(`Unknown drawer action: ${action}`);
+            }
+        }
+
+        /**
+         * Creates a new file (tab) and switches to it.
+         */
+        function createNewFile() {
+            // Deactivate current active tab
+            const currentActiveTabElement = document.querySelector('.tab-item.active');
+            if (currentActiveTabElement) {
+                currentActiveTabElement.classList.remove('active');
+            }
+
+            // Create new tab element
+            const newTabId = 'new-tab-' + (++tabCounter); // Unique ID for the new tab
+            const newTabElement = document.createElement('div');
+            newTabElement.classList.add('tab-item');
+            newTabElement.classList.add('active'); // Make new tab active
+            newTabElement.textContent = 'new*'; // Label for new tabs
+            newTabElement.dataset.tabId = newTabId; // Store unique ID
+            newTabElement.onclick = function() { switchTab(this); }; // Attach click handler
+            tabsBar.appendChild(newTabElement);
+
+            // Store boilerplate content for the new file
+            fileContents[newTabId] = defaultBoilerplate;
+            currentActiveTabId = newTabId;
+
+            // Load boilerplate into editor and update UI
+            codeEditor.value = defaultBoilerplate;
+            updateLineNumbers(); // Update line numbers for empty editor
+            clearOutput();
+        }
+
+        /**
+         * Closes the currently active tab.
+         */
+        function closeCurrentTab() {
+            const currentActiveTabElement = document.querySelector('.tab-item.active');
+            if (!currentActiveTabElement) return; // No active tab to close
+
+            const tabIdToClose = currentActiveTabElement.dataset.tabId;
+
+            // Cannot close the last remaining tab
+            if (Object.keys(fileContents).length === 1 && tabIdToClose === 'default-tab') {
+                appendOutput("Cannot close the last remaining tab. Clearing editor instead.");
+                codeEditor.value = '';
+                fileContents['default-tab'] = ''; // Clear content for the default tab
+                updateLineNumbers();
+                clearOutput();
+                return;
+            }
+
+            // Remove content from storage
+            delete fileContents[tabIdToClose];
+
+            // Remove tab element from DOM
+            tabsBar.removeChild(currentActiveTabElement);
+
+            // Determine new active tab
+            const remainingTabs = Array.from(tabsBar.children);
+            if (remainingTabs.length > 0) {
+                // Activate the last remaining tab
+                const newActiveTabElement = remainingTabs[remainingTabs.length - 1];
+                switchTab(newActiveTabElement);
+            } else {
+                // This case should ideally not happen if default-tab is always present
+                // But as a fallback, re-initialize to a blank state
+                createNewFile(); // Create a new 'new' tab
+            }
+        }
+
+
+        /**
+         * Switches to the clicked tab, loading its content into the editor.
+         * @param {HTMLElement} clickedTabElement - The tab element that was clicked.
+         */
+        function switchTab(clickedTabElement) {
+            // If already active, do nothing
+            if (clickedTabElement.classList.contains('active')) {
+                return;
+            }
+
+            // Deactivate current active tab
+            const currentActiveTabElement = document.querySelector('.tab-item.active');
+            if (currentActiveTabElement) {
+                currentActiveTabElement.classList.remove('active');
+            }
+
+            // Activate the clicked tab
+            clickedTabElement.classList.add('active');
+            currentActiveTabId = clickedTabElement.dataset.tabId;
+
+            // Load content for the new active tab
+            codeEditor.value = fileContents[currentActiveTabId];
+            updateLineNumbers(); // Update line numbers for loaded content
+            clearOutput(); // Clear output when switching tabs
+        }
+
+        /**
+         * Handles the file selection for image import.
+         */
+        imageFileInput.addEventListener('change', (event) => {
+            const files = event.target.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        importedImages[file.name] = {
+                            src: e.target.result,
+                            x: 0, // Default X position
+                            y: 0, // Default Y position
+                            element: null // Will store the img DOM element when displayed
+                        };
+                        appendOutput(`Image imported: '${file.name}'`);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    appendOutput(`ERROR: Selected file '${file.name}' is not an image. Please select an image file.`);
+                }
+            }
+            // Reset the input value so that selecting the same file again triggers change event
+            imageFileInput.value = '';
+        });
+
+        /**
+         * Programmatically opens the hidden file input for image selection.
+         */
+        function openImageFilePicker() {
+            imageFileInput.click();
+        }
+
+        /**
+         * Handles the file selection for .zetha file open.
+         */
+        zethaFileInput.addEventListener('change', (event) => {
+            const files = event.target.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.name.endsWith('.zetha')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const fileContent = e.target.result;
+                        const fileName = file.name;
+
+                        // Create a new tab for the opened file
+                        // Deactivate current active tab
+                        const currentActiveTabElement = document.querySelector('.tab-item.active');
+                        if (currentActiveTabElement) {
+                            currentActiveTabElement.classList.remove('active');
+                        }
+
+                        // Create new tab element
+                        const newTabId = 'file-' + fileName.replace(/\./g, '_'); // Unique ID for the file tab
+                        const newTabElement = document.createElement('div');
+                        newTabElement.classList.add('tab-item');
+                        newTabElement.classList.add('active'); // Make new tab active
+                        newTabElement.textContent = fileName; // Display file name
+                        newTabElement.dataset.tabId = newTabId; // Store unique ID
+                        newTabElement.onclick = function() { switchTab(this); }; // Attach click handler
+                        tabsBar.appendChild(newTabElement);
+
+                        // Store content for the new file
+                        fileContents[newTabId] = fileContent;
+                        currentActiveTabId = newTabId;
+
+                        // Load content into editor and update UI
+                        codeEditor.value = fileContent;
+                        updateLineNumbers();
+                        clearOutput();
+                        appendOutput(`File opened: '${fileName}'`);
+                    };
+                    reader.readAsText(file);
+                } else {
+                    appendOutput(`ERROR: Selected file '${file.name}' is not a .zetha file. Please select a .zetha file.`);
+                }
+            }
+            // Reset the input value so that selecting the same file again triggers change event
+            zethaFileInput.value = '';
+        });
+
+        /**
+         * Programmatically opens the hidden file input for .zetha file selection.
+         */
+        function openZethaFilePicker() {
+            zethaFileInput.click();
+        }
+
+        /**
+         * Shows the custom save modal.
+         */
+        function showSaveModal() {
+            saveModalOverlay.classList.remove('hidden-element');
+            saveModalOverlay.style.display = 'flex'; // Ensure it's displayed
+            saveFileNameInput.value = ''; // Clear previous input
+            saveFileNameInput.focus(); // Focus on the input field
+            console.log("Save modal shown.");
+        }
+
+        /**
+         * Hides the custom save modal.
+         */
+        function hideSaveModal() {
+            saveModalOverlay.classList.add('hidden-element');
+            saveModalOverlay.style.display = 'none'; // Ensure it's hidden
+            console.log("Save modal hidden.");
+        }
+
+        /**
+         * Shows the share modal.
+         */
+        function showShareModal() {
+            shareModalOverlay.classList.remove('hidden-element');
+            shareModalOverlay.style.display = 'flex';
+            // Close other menus if open
+            hideFileMenu();
+            hideLightbulbMenu();
+            hideThreeDotsMenu();
+            hideSideDrawer();
+            hideSaveModal();
+            hideImageSuggestionBox(); // Ensure image suggestion box is hidden
+            hidePipModules();
+            hideSettings();
+            console.log("Share modal shown.");
+        }
+
+        /**
+         * Hides the share modal.
+         */
+        function hideShareModal() {
+            shareModalOverlay.classList.add('hidden-element');
+            shareModalOverlay.style.display = 'none';
+            console.log("Share modal hidden.");
+        }
+
+        /**
+         * Simulates sharing the code via a chosen browser.
+         * In a real application, this would use Web Share API or specific browser extensions.
+         * For this demo, it opens the code as a data URL in a new tab.
+         * @param {string} browserName - The name of the browser chosen for sharing.
+         */
+        function shareCodeViaBrowser(browserName) {
+            const codeContent = codeEditor.value;
+            const blob = new Blob([codeContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+
+            // Open in a new tab/window
+            const newWindow = window.open(url, '_blank');
+            if (newWindow) {
+                newWindow.focus();
+                appendOutput(`Simulating sharing code via ${browserName}. Check the new tab.`);
+            } else {
+                appendOutput(`Failed to open new tab for sharing. Please allow pop-ups.`);
+            }
+
+            URL.revokeObjectURL(url); // Clean up the object URL
+            hideShareModal();
+        }
+
+        /**
+         * Sends the current code to Pastebin.com by submitting a hidden form.
+         */
+        function sendCodeToPastebin() {
+            const codeContent = codeEditor.value;
+            const form = document.createElement('form');
+            form.setAttribute('method', 'POST');
+            form.setAttribute('action', 'https://pastebin.com/post');
+            form.setAttribute('target', '_blank'); // Open in a new tab
+
+            const textarea = document.createElement('textarea');
+            textarea.setAttribute('name', 'paste_code'); // Pastebin's expected field name for code
+            textarea.value = codeContent;
+
+            form.appendChild(textarea);
+            document.body.appendChild(form); // Append to body to submit
+
+            form.submit(); // Submit the form
+            document.body.removeChild(form); // Clean up the form
+
+            appendOutput("Code sent to Pastebin.com. Check the new tab.");
+            // Hide all open menus/modals
+            hideSideDrawer();
+            hideFileMenu();
+            hideLightbulbMenu();
+            hideThreeDotsMenu();
+            hideSaveModal();
+            hideShareModal();
+            hideImageSuggestionBox();
+            hidePipModules();
+            hideSettings();
+        }
+
+        /**
+         * Updates the time displayed in the zethapp header.
+         * (This function is now effectively unused as systemStatusBar is removed)
+         */
+        function updateZethappTime() {
+            // This function is no longer needed as the system status bar is removed.
+            // Keeping it as a placeholder in case it's re-added later.
+            // const now = new Date();
+            // const hours = now.getHours();
+            // const minutes = now.getMinutes();
+            // const ampm = hours >= 12 ? 'PM' : 'AM';
+            // const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
+            // const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+            // document.getElementById('zethappTime').textContent = `${formattedHours}:${formattedMinutes} ${ampm}`;
+        }
+
+        /**
+         * Handles the three dots menu action in Zethapp mode.
+         */
+        function handleZethappThreeDotsMenu() {
+            appendOutput("Zethapp menu options (not implemented)");
+            // In a real app, this would open a context menu specific to the Zethapp output.
+        }
+
+        /**
+         * Applies the zethapp mobile console styling.
+         */
+        function applyZethappOutputStyle() {
+            outputConsole.classList.add('zethapp-mode');
+            outputContentDiv.classList.add('zethapp-mode');
+            defaultOutputHeader.style.display = 'none'; // Hide the default header
+            zethappOutputHeader.classList.remove('hidden-element'); // Show the zethapp header
+            // Clear any previous text output from console mode
+            outputContentDiv.textContent = '';
+            currentOutputMode = 'zethapp';
+            // No time update needed as system status bar is removed
+            // Start the blinking cursor
+            if (!cursorInterval) {
+                cursorInterval = setInterval(() => {
+                    const cursor = outputContentDiv.querySelector('.blinking-cursor');
+                    if (cursor) {
+                        cursor.style.visibility = (cursor.style.visibility === 'hidden' ? 'visible' : 'hidden');
+                    }
+                }, 500); // Blink every 500ms
+            }
+        }
+
+        /**
+         * Resets the output console styling to default.
+         */
+        function resetOutputStyle() {
+            outputConsole.classList.remove('zethapp-mode');
+            outputContentDiv.classList.remove('zethapp-mode');
+            defaultOutputHeader.style.display = 'flex'; // Show default header again
+            zethappOutputHeader.classList.add('hidden-element'); // Hide zethapp header
+            outputContentDiv.style.padding = '15px';
+            outputContentDiv.style.overflowY = 'auto';
+            outputContentDiv.style.position = 'static';
+            outputContentDiv.style.backgroundColor = 'var(--bg-primary)'; // Default background to theme variable
+            outputContentDiv.style.color = 'var(--text-primary)'; // Default text color to theme variable
+            outputContentDiv.style.fontFamily = 'monospace'; // Default font
+            currentOutputMode = 'console';
+            // Stop and clear the blinking cursor interval
+            if (cursorInterval) {
+                clearInterval(cursorInterval);
+                cursorInterval = null;
+            }
+            // Remove any lingering cursor element
+            const existingCursor = outputContentDiv.querySelector('.blinking-cursor');
+            if (existingCursor) {
+                existingCursor.remove();
+            }
+        }
+
+
+        /**
+         * Executes the Zetha code entered in the editor.
+         * @returns {Promise<void>} A promise that resolves when all commands are executed.
+         */
+        async function runCode() {
+            showOutputFullScreen(); // Transition to full-screen output
+            clearOutput(); // Clear previous output and images
+            variables = {}; // Reset variables for each run
+            importedModules = {}; // Reset imported modules for each run
+            resetOutputStyle(); // Ensure output style is reset before parsing
+
+            const code = document.getElementById('codeEditor').value;
+            const lines = code.split('\n');
+
+            let inMultiLineComment = false;
+            let currentLineNumber = 0; // Track actual line number for errors
+
+            let state = 'EXPECT_USING_SYSTEM'; // States: EXPECT_USING_SYSTEM, EXPECT_TROXLIB_IMPORTS, EXPECT_NAMESPACE, EXPECT_NAMESPACE_OPEN_BRACE, EXPECT_MAIN_METHOD, EXPECT_MAIN_OPEN_BRACE, EXPECT_CLASS, EXPECT_CLASS_OPEN_BRACE, IN_CLASS_BLOCK, EXPECT_CLASS_CLOSE_BRACE, EXPECT_MAIN_CLOSE_BRACE, EXPECT_NAMESPACE_CLOSE_BRACE
+            let braceStack = []; // To keep track of open braces for structural validation
+
+            let namespaceName = ""; // To store the parsed namespace name
+
+            for (let i = 0; i < lines.length; i++) {
+                currentLineNumber = i + 1;
+                let originalLine = lines[i];
+                let line = originalLine.trim();
+
+                // Handle multi-line comments (¶...¶)
+                if (line.includes('¶')) {
+                    inMultiLineComment = !inMultiLineComment;
+                    line = line.replace(/¶/g, '').trim();
+                }
+                if (inMultiLineComment) {
+                    continue;
+                }
+
+                // Handle single-line comments (*//* and //)
+                const singleLineCommentZethaIndex = line.indexOf('*/*');
+                const singleLineCommentCStyleIndex = line.indexOf('//');
+
+                if (singleLineCommentZethaIndex !== -1 && (singleLineCommentCStyleIndex === -1 || singleLineCommentZethaIndex < singleLineCommentCStyleIndex)) {
+                    line = line.substring(0, singleLineCommentZethaIndex).trim();
+                } else if (singleLineCommentCStyleIndex !== -1) {
+                    line = line.substring(0, singleLineCommentCStyleIndex).trim();
+                }
+
+                if (line === '') {
+                    continue; // Skip empty lines after comment removal
+                }
+
+                // State machine for parsing Zetha structure
+                switch (state) {
+                    case 'EXPECT_USING_SYSTEM':
+                        if (line === 'using Zetha.System;') {
+                            state = 'EXPECT_TROXLIB_IMPORTS'; // Transition to new state for Troxlib imports
+                        } else {
+                            appendOutput(`ERROR on line ${currentLineNumber}: Expected 'using Zetha.System;'. Error code (001)`);
+                            return;
+                        }
+                        break;
+
+                    case 'EXPECT_TROXLIB_IMPORTS':
+                        const troxlibImportMatch = line.match(/^using Troxlib\.([a-zA-Z_][a-zA-Z0-9_]*);$/);
+                        if (troxlibImportMatch) {
+                            const moduleName = troxlibImportMatch[1];
+                            const supportedModules = ['random', 'time', 'datetime', 'vector', 'troxlib', 'zethapp', 'Zethmath', 'ZethGrandGL', 'TroxWeb', 'ZethAPK', 'ZethFlow', 'Zwift', 'Zexe', 'Xandrome', 'Sci-Zi learn', 'TIME', 'Random', 'PNLaw', 'ZethSQL', 'Zarser', 'Zexer'];
+                            if (supportedModules.includes(moduleName)) {
+                                importedModules[moduleName] = true;
+                                appendOutput(`Module '${moduleName}' imported successfully.`);
+                                if (moduleName === 'zethapp') {
+                                    applyZethappOutputStyle();
+                                }
+                            } else {
+                                appendOutput(`ERROR on line ${currentLineNumber}: Unknown module 'Troxlib.${moduleName}'.`);
+                                return;
+                            }
+                        } else if (line.startsWith('Zetha namespace')) { // Transition to next main block
+                            const namespaceMatch = line.match(/^Zetha namespace\s*(".*?")?;$/);
+                            if (namespaceMatch) {
+                                namespaceName = namespaceMatch[1] ? namespaceMatch[1].substring(1, namespaceMatch[1].length - 1) : "Default";
+                                state = 'EXPECT_NAMESPACE_OPEN_BRACE';
+                            } else {
+                                appendOutput(`ERROR on line ${currentLineNumber}: Expected 'Zetha namespace "YourNamespace";' or 'Zetha namespace;'.`);
+                                return;
+                            }
+                        } else {
+                            appendOutput(`ERROR on line ${currentLineNumber}: Unexpected statement. Expected 'using Troxlib.module;' or 'Zetha namespace;'.`);
+                            return;
+                        }
+                        break;
+
+                    case 'EXPECT_NAMESPACE_OPEN_BRACE':
+                        if (line === '{') {
+                            braceStack.push('{');
+                            state = 'EXPECT_MAIN_METHOD';
+                        } else {
+                            appendOutput(`ERROR on line ${currentLineNumber}: Expected '{' after namespace declaration.`);
+                            return;
+                        }
+                        break;
+
+                    case 'EXPECT_MAIN_METHOD':
+                        if (line === 'Subject.static.void Main(string*args[])') {
+                            state = 'EXPECT_MAIN_OPEN_BRACE';
+                        } else {
+                            appendOutput(`ERROR on line ${currentLineNumber}: Expected 'Subject.static.void Main(string*args[])'.`);
+                            return;
+                        }
+                        break;
+
+                    case 'EXPECT_MAIN_OPEN_BRACE':
+                        if (line === '{') {
+                            braceStack.push('{');
+                            state = 'EXPECT_CLASS';
+                        } else {
+                            appendOutput(`ERROR on line ${currentLineNumber}: Expected '{' after Main method declaration.`);
+                            return;
+                        }
+                        break;
+
+                    case 'EXPECT_CLASS':
+                        if (line === 'Class') {
+                            state = 'EXPECT_CLASS_OPEN_BRACE';
+                        } else {
+                            appendOutput(`ERROR on line ${currentLineNumber}: Expected 'Class' declaration.`);
+                            return;
+                        }
+                        break;
+
+                    case 'EXPECT_CLASS_OPEN_BRACE':
+                        if (line === '{') {
+                            braceStack.push('{');
+                            state = 'IN_CLASS_BLOCK';
+                        } else {
+                            appendOutput(`ERROR on line ${currentLineNumber}: Expected '{' after Class declaration.`);
+                            return;
+                        }
+                        break;
+
+                    case 'IN_CLASS_BLOCK':
+                        if (line === '}') {
+                            if (braceStack.length > 0 && braceStack[braceStack.length - 1] === '{') {
+                                braceStack.pop(); // Pop the class brace
+                                if (braceStack.length > 0 && braceStack[braceStack.length - 1] === '{') {
+                                    // If there's still a brace, it means we're closing the Main method
+                                    state = 'EXPECT_MAIN_CLOSE_BRACE';
+                                } else {
+                                    // This case should not happen in the current structure as Main has its own brace
+                                    appendOutput(`ERROR on line ${currentLineNumber}: Unexpected closing brace for Class block.`);
+                                    return;
+                                }
+                            } else {
+                                appendOutput(`ERROR on line ${currentLineNumber}: Unexpected closing brace.`);
+                                return;
+                            }
+                        } else {
+                            // Execute actual Zetha commands here
+                            try {
+                                await executeCommand(line, currentLineNumber);
+                            } catch (error) {
+                                appendOutput(`ERROR on line ${currentLineNumber}: ${error.message}`);
+                                return;
+                            }
+                        }
+                        break;
+
+                    case 'EXPECT_MAIN_CLOSE_BRACE':
+                        if (line === '}') {
+                            if (braceStack.length > 0 && braceStack[braceStack.length - 1] === '{') {
+                                braceStack.pop(); // Pop the Main method brace
+                                state = 'EXPECT_NAMESPACE_CLOSE_BRACE';
+                            } else {
+                                appendOutput(`ERROR on line ${currentLineNumber}: Unexpected closing brace for Main method.`);
+                                return;
+                            }
+                        } else {
+                            appendOutput(`ERROR on line ${currentLineNumber}: Expected '}' to close Main method.`);
+                            return;
+                        }
+                        break;
+
+                    case 'EXPECT_NAMESPACE_CLOSE_BRACE':
+                        if (line === '}') {
+                            if (braceStack.length > 0 && braceStack[braceStack.length - 1] === '{') {
+                                braceStack.pop(); // Pop the namespace brace
+                                state = 'END_OF_FILE'; // All main blocks closed
+                            } else {
+                                appendOutput(`ERROR on line ${currentLineNumber}: Unexpected closing brace for Namespace block.`);
+                                return;
+                            }
+                        } else {
+                            appendOutput(`ERROR on line ${currentLineNumber}: Expected '}' to close namespace block.`);
+                            return;
+                        }
+                        break;
+
+                    case 'END_OF_FILE':
+                        // Only allow empty lines or comments after the main structure is closed
+                        break;
+
+                    default:
+                        appendOutput(`ERROR on line ${currentLineNumber}: Unexpected state reached by parser.`);
+                        return;
+                }
+            }
+
+            // Final validation after parsing all lines
+            if (state !== 'END_OF_FILE' && braceStack.length > 0) {
+                appendOutput(`ERROR: Unexpected end of file. Missing ${braceStack.length} closing brace(s) or incomplete structure.`);
+            } else if (state !== 'END_OF_FILE') {
+                // This covers cases where the structure is partially complete but not fully closed
+                appendOutput(`ERROR: Incomplete Zetha program structure. Current state: ${state}.`);
+            } else {
+                appendOutput("                                  [Program finished]"); // Add "Program finished" when execution is truly done
+            }
+        }
+
+        /**
+         * Displays an image on the zethapp console.
+         * @param {string} imageName - The name of the image to display.
+         */
+        function displayImageOnZethappConsole(imageName) {
+            if (!importedModules['zethapp']) {
+                throw new Error(`Cannot display image. Troxlib.zethapp module is not imported. Use 'using Troxlib.zethapp;' first.`);
+            }
+            const imageData = importedImages[imageName];
+            if (!imageData) {
+                throw new Error(`Image '${imageName}' not found. Please import it first.`);
+            }
+
+            let imgElement = imageData.element;
+            if (!imgElement) {
+                imgElement = document.createElement('img');
+                imgElement.id = `zethapp-image-${imageName.replace(/[^a-zA-Z0-9]/g, '_')}`; // Sanitize ID
+                imgElement.src = imageData.src;
+                outputContentDiv.appendChild(imgElement);
+                imageData.element = imgElement; // Store reference
+            }
+
+            // Apply position
+            imgElement.style.left = `${imageData.x}px`;
+            imgElement.style.top = `${imageData.y}px`;
+            imgElement.style.display = 'block'; // Ensure it's visible
+            appendOutput(`Displayed image '${imageName}' at (${imageData.x}, ${imageData.y}).`);
+        }
+
+        /**
+         * Executes a single Zetha command.
+         * This function now only handles commands *within* the Class block.
+         * Module imports are handled by the main parser in runCode().
+         * @param {string} commandLine - The full command line string (without trailing semicolon).
+         * @param {number} lineNumber - The line number for error reporting.
+         * @returns {Promise<void>} A promise that resolves after command execution.
+         */
+        async function executeCommand(commandLine, lineNumber) {
+            // Ensure the command ends with a semicolon and remove it for parsing
+            if (!commandLine.endsWith(';')) {
+                throw new Error(`Missing semicolon at the end of the statement.`);
+            }
+            commandLine = commandLine.slice(0, -1).trim();
+
+            // Subject.print("...") or Subject.print(variable)
+            const printMatch = commandLine.match(/^Subject\.print\((["'])(.*?)\1|([^"'].*?)\)$/);
+            if (printMatch) {
+                let content;
+                if (printMatch[2]) { // If it's a string literal like "Hello"
+                    content = printMatch[2];
+                } else if (printMatch[3]) { // If it's a variable or expression like myVar + "text"
+                    content = printMatch[3];
+                } else {
+                    throw new Error("Invalid content for Subject.print().");
+                }
+
+                const parts = content.split('+').map(part => part.trim());
+                let outputMessage = '';
+                for (const part of parts) {
+                    const resolvedPart = resolveValue(part);
+                    if (Array.isArray(resolvedPart)) {
+                        outputMessage += '[' + resolvedPart.map(item => JSON.stringify(item)).join(', ') + ']';
+                    } else if (typeof resolvedPart === 'object' && resolvedPart !== null) {
+                        outputMessage += JSON.stringify(resolvedPart);
+                    } else {
+                        outputMessage += resolvedPart;
+                    }
+                }
+                appendOutput(outputMessage);
+                return;
+            }
+
+            // Subject.image("image_name")
+            const subjectImageMatch = commandLine.match(/^Subject\.image\((["'])(.*?)\1\)$/);
+            if (subjectImageMatch) {
+                const imageName = subjectImageMatch[2];
+                displayImageOnZethappConsole(imageName);
+                return;
+            }
+
+            // image("name") = x(x_pos), y(y_pos)
+            const imagePositionMatch = commandLine.match(/^image\((["'])(.*?)\1\)\s*=\s*x\((\d+)\),\s*y\((\d+)\)$/);
+            if (imagePositionMatch) {
+                if (!importedModules['zethapp']) {
+                    throw new Error(`Cannot position image. Troxlib.zethapp module is not imported. Use 'using Troxlib.zethapp;' first.`);
+                }
+                const imageName = imagePositionMatch[2];
+                const xPos = parseInt(imagePositionMatch[3], 10);
+                const yPos = parseInt(imagePositionMatch[4], 10);
+
+                if (!importedImages[imageName]) {
+                    throw new Error(`Image '${imageName}' not found for positioning. Please import it first.`);
+                }
+
+                importedImages[imageName].x = xPos;
+                importedImages[imageName].y = yPos;
+
+                // If the image is already on the console, update its position
+                if (importedImages[imageName].element) {
+                    importedImages[imageName].element.style.left = `${xPos}px`;
+                    importedImages[imageName].element.style.top = `${yPos}px`;
+                    appendOutput(`Moved image '${imageName}' to (${xPos}, ${yPos}).`);
+                } else {
+                    // If not yet displayed, implicitly display it at the new position
+                    displayImageOnZethappConsole(imageName);
+                }
+                return;
+            }
+
+            const varMatch = commandLine.match(/^var\.(int|string|char|any)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.*)$/);
+            if (varMatch) {
+                const varType = varMatch[1];
+                const varName = varMatch[2];
+                let varValueRaw = varMatch[3].trim();
+                let varValue;
+
+                if (varType === 'any') {
+                    varValue = resolveValue(varValueRaw);
+                    if ((varValueRaw.startsWith('"') && varValueRaw.endsWith('"')) ||
+                        (varValueRaw.startsWith("'") && varValueRaw.endsWith("'"))) {
+                        varValue = varValueRaw.substring(1, varValueRaw.length - 1);
+                    }
+                } else {
+                    switch (varType) {
+                        case 'int':
+                            varValue = parseFloat(varValueRaw);
+                            if (isNaN(varValue) || !isFinite(varValue)) {
+                                throw new Error(`Invalid integer value for variable '${varName}'.`);
+                            }
+                            break;
+                        case 'string':
+                            if ((varValueRaw.startsWith('"') && varValueRaw.endsWith('"')) ||
+                                (varValueRaw.startsWith("'") && varValueRaw.endsWith("'"))) {
+                                varValue = varValueRaw.substring(1, varValueRaw.length - 1);
+                            } else {
+                                varValue = resolveValue(varValueRaw);
+                            }
+                            break;
+                        case 'char':
+                            if (varValueRaw.startsWith("'") && varValueRaw.endsWith("'") && varValueRaw.length === 3) {
+                                varValue = varValueRaw.charAt(1);
+                            } else {
+                                throw new Error(`Invalid character value for variable '${varName}'. Must be a single character in single quotes (e.g., 'a').`);
+                            }
+                            break;
+                        default:
+                            throw new Error(`Unknown variable type '${varType}'.`);
+                    }
+                }
+                variables[varName] = varValue;
+                return;
+            }
+
+            const listMatch = commandLine.match(/^wil\.list\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*\[(.*)\]$/);
+            if (listMatch) {
+                const listVarName = listMatch[1];
+                const listContentRaw = listMatch[2].trim();
+                let listItems = [];
+
+                if (listContentRaw) {
+                    const rawItems = listContentRaw.split(',').map(item => item.trim());
+                    for (const item of rawItems) {
+                        listItems.push(resolveValue(item));
+                    }
+                }
+                variables[listVarName] = listItems;
+                return;
+            }
+
+            const inputMatch = commandLine.match(/^wii\.input\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*interact\.input\((["'])(.*?)\2\)$/);
+            if (inputMatch) {
+                const varName = inputMatch[1];
+                const promptMessage = inputMatch[3];
+                const userInput = prompt(promptMessage);
+                variables[varName] = userInput !== null ? userInput : "";
+                return;
+            }
+
+            const moduleCallMatch = commandLine.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_][a-zA-Z0-9_]*)\((.*)\)$/);
+            if (moduleCallMatch) {
+                const moduleName = moduleCallMatch[1];
+                const functionName = moduleCallMatch[2];
+                const argsRaw = moduleCallMatch[3].trim();
+                const args = argsRaw ? args.split(',').map(arg => resolveValue(arg.trim())) : [];
+
+                // Only allow calls to modules that are *not* zethapp, as zethapp commands are handled directly
+                const nonZethappSupportedModules = ['random', 'time', 'datetime', 'vector', 'troxlib'];
+
+                if (!importedModules[moduleName]) {
+                    throw new Error(`Module '${moduleName}' not imported. Use 'using Troxlib.${moduleName};' to import it.`);
+                }
+                if (!nonZethappSupportedModules.includes(moduleName)) {
+                    throw new Error(`Module '${moduleName}' does not support direct function calls via this syntax.`);
+                }
+
+                switch (moduleName) {
+                    case 'random':
+                        if (functionName === 'int') {
+                            if (args.length !== 2 || typeof args[0] !== 'number' || typeof args[1] !== 'number') {
+                                throw new Error(`random.int() requires two number arguments: random.int(min, max).`);
+                            }
+                            const min = Math.ceil(args[0]);
+                            const max = Math.floor(args[1]);
+                            appendOutput(`random.int(${args[0]}, ${args[1]}) result: ${Math.floor(Math.random() * (max - min + 1)) + min}`);
+                        } else if (functionName === 'float') {
+                            if (args.length !== 0) {
+                                throw new Error(`random.float() takes no arguments.`);
+                            }
+                            appendOutput(`random.float() result: ${Math.random()}`);
+                        } else {
+                            throw new Error(`Unknown function '${functionName}' in module 'random'.`);
+                        }
+                        break;
+                    case 'time':
+                        if (functionName === 'sleep') {
+                            if (args.length !== 1 || typeof args[0] !== 'number' || args[0] < 0) {
+                                throw new Error(`time.sleep() requires a single positive number argument (milliseconds).`);
+                            }
+                            appendOutput(`Sleeping for ${args[0]}ms...`);
+                            await new Promise(resolve => setTimeout(resolve, args[0]));
+                            appendOutput(`Sleep finished.`);
+                        } else {
+                            throw new Error(`Unknown function '${functionName}' in module 'time'.`);
+                        }
+                        break;
+                    case 'datetime':
+                        if (functionName === 'now') {
+                            if (args.length !== 0) {
+                                throw new Error(`datetime.now() takes no arguments.`);
+                            }
+                            appendOutput(`datetime.now() result: ${new Date().toLocaleString()}`);
+                        } else {
+                            throw new Error(`Unknown function '${functionName}' in module 'datetime'.`);
+                        }
+                        break;
+                    case 'vector':
+                        if (functionName === 'create') {
+                            if (args.length !== 2 || typeof args[0] !== 'number' || typeof args[1] !== 'number') {
+                                throw new Error(`vector.create() requires two number arguments: vector.create(x, y).`);
+                            }
+                            const newVec = { x: args[0], y: args[1] };
+                            appendOutput(`vector.create() result: ${JSON.stringify(newVec)}`);
+                        } else if (functionName === 'add') {
+                            if (args.length !== 2 || typeof args[0] !== 'object' || args[0] === null || !('x' in args[0] && 'y' in args[0]) ||
+                                typeof args[1] !== 'object' || args[1] === null || !('x' in args[1] && 'y' in args[1])) {
+                                throw new Error(`vector.add() requires two vector objects: vector.add(vec1, vec2).`);
+                            }
+                            const vec1 = args[0];
+                            const vec2 = args[1];
+                            const sumVec = { x: vec1.x + vec2.x, y: vec1.y + vec2.y };
+                            appendOutput(`vector.add() result: ${JSON.stringify(sumVec)}`);
+                        } else {
+                            throw new Error(`Unknown function '${functionName}' in module 'vector'.`);
+                        }
+                        break;
+                    case 'troxlib':
+                        if (functionName === 'sendData') {
+                            if (args.length === 0) {
+                                throw new Error(`troxlib.sendData() requires at least one argument.`);
+                            }
+                            const dataToSend = args.map(arg => JSON.stringify(arg)).join(', ');
+                            appendOutput(`Troxlib: Simulating sending data: [${dataToSend}] to the Troxlib app.`);
+                        } else {
+                            throw new Error(`Unknown function '${functionName}' in module 'troxlib'.`);
+                        }
+                        break;
+                    default:
+                        throw new Error(`Module '${moduleName}' is imported but has no defined functions for direct calling.`);
+                }
+                return;
+            }
+
+            throw new Error(`Unknown command or invalid syntax: '${commandLine}'.`);
+        }
+
+        /**
+         * Checks the code editor content for 'Subject.image("' and shows image suggestions.
+         */
+        function checkImageSuggestion() {
+            const cursorPosition = codeEditor.selectionStart;
+            const textBeforeCursor = codeEditor.value.substring(0, cursorPosition);
+
+            // Regex to match 'Subject.image("' followed by any characters that are not a closing quote
+            const match = textBeforeCursor.match(/Subject\.image\("([^"]*)$/);
+
+            if (match && Object.keys(importedImages).length > 0) {
+                const partialText = match[1];
+                const filteredSuggestions = Object.keys(importedImages).filter(imageName =>
+                    imageName.toLowerCase().includes(partialText.toLowerCase())
+                );
+                populateImageSuggestions(filteredSuggestions, partialText);
+                showImageSuggestionBox();
+            } else {
+                hideImageSuggestionBox();
+            }
+        }
+
+        /**
+         * Populates the image suggestion box with filtered image names.
+         * @param {string[]} suggestions - An array of image names to suggest.
+         * @param {string} partialText - The text already typed by the user.
+         */
+        function populateImageSuggestions(suggestions, partialText) {
+            imageSuggestionBox.innerHTML = ''; // Clear previous suggestions
+
+            if (suggestions.length === 0) {
+                const noResultItem = document.createElement('div');
+                noResultItem.classList.add('suggestion-item');
+                noResultItem.textContent = "No matching images";
+                noResultItem.style.opacity = "0.7";
+                noResultItem.style.cursor = "default";
+                imageSuggestionBox.appendChild(noResultItem);
+                return;
+            }
+
+            suggestions.forEach(imageName => {
+                const item = document.createElement('div');
+                item.classList.add('suggestion-item');
+                item.textContent = imageName;
+                item.onclick = () => selectImageSuggestion(imageName);
+                imageSuggestionBox.appendChild(item);
+            });
+        }
+
+        /**
+         * Selects an image suggestion and completes the code.
+         * @param {string} imageName - The selected image name.
+         */
+        function selectImageSuggestion(imageName) {
+            const cursorPosition = codeEditor.selectionStart;
+            const textBeforeCursor = codeEditor.value.substring(0, cursorPosition);
+            const textAfterCursor = codeEditor.value.substring(cursorPosition);
+
+            // Find the start of the partial image name within Subject.image("
+            const startIndexMatch = textBeforeCursor.match(/Subject\.image\("([^"]*)$/);
+            if (!startIndexMatch) {
+                hideImageSuggestionBox();
+                return;
+            }
+
+            const startOfPartialTextIndex = textBeforeCursor.lastIndexOf(startIndexMatch[1]);
+            const startOfQuoteIndex = textBeforeCursor.lastIndexOf('"', startOfPartialTextIndex - 1);
+            const startOfCommandIndex = textBeforeCursor.lastIndexOf('Subject.image("', startOfQuoteIndex);
+
+            if (startOfCommandIndex === -1) {
+                hideImageSuggestionBox();
+                return;
+            }
+
+            const newText = codeEditor.value.substring(0, startOfCommandIndex) +
+                             `Subject.image("${imageName}");` +
+                             textAfterCursor;
+
+            codeEditor.value = newText;
+            // Position cursor after the completed statement
+            codeEditor.selectionStart = codeEditor.selectionEnd = startOfCommandIndex + `Subject.image("${imageName}");`.length;
+            updateLineNumbers();
+            hideImageSuggestionBox();
+            codeEditor.focus();
+        }
+
+        /**
+         * Shows the image suggestion box.
+         */
+        function showImageSuggestionBox() {
+            imageSuggestionBox.classList.remove('hidden-element');
+            imageSuggestionBox.style.display = 'flex';
+        }
+
+        /**
+         * Hides the image suggestion box.
+         */
+        function hideImageSuggestionBox() {
+            imageSuggestionBox.classList.add('hidden-element');
+            imageSuggestionBox.style.display = 'none';
+        }
+
+        // Hide suggestions when clicking outside the editor or suggestion box
+        document.addEventListener('click', (event) => {
+            if (!codeEditor.contains(event.target) && !imageSuggestionBox.contains(event.target)) {
+                hideImageSuggestionBox();
+            }
+        });
+    </script>
+</body>
+</html>
